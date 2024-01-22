@@ -19,7 +19,6 @@ var userSchema = new mongoose.Schema(
     },
     mobile: {
       type: String,
-      required: true,
       unique: true,
     },
     password: {
@@ -29,6 +28,10 @@ var userSchema = new mongoose.Schema(
     role: {
       type: String,
       default: "user",
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
     },
     cart: {
       type: Array,

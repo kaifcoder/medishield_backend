@@ -10,21 +10,80 @@ const validateMongoDbId = require("../utils/validateMongodbId");
 const { generateRefreshToken } = require("../config/refreshtoken");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const sendEmail = require("./emailCtrl");
-
-// Create a User ----------------------------------------------
+const { sendResendEmail } = require("../utils/sendResendEmail");
+require("dotenv").config();
 
 const createUser = asyncHandler(async (req, res) => {
-
   const email = req.body.email;
+  const mobile = req.body.mobile;
   const findUser = await User.findOne({ email: email });
-
-  if (!findUser) {
+  const findUserWithMobile = await User.findOne({ mobile: mobile });
+  if (!findUser && !findUserWithMobile) {
     const newUser = await User.create(req.body);
-    res.json(newUser);
+    res.json({
+      newUser,
+      token: generateToken(newUser?._id),
+    });
   } else {
-    throw new Error("User Already Exists");
+    throw new Error("User Already Exists Please Login");
   }
+});
+
+const isEmailVerified = asyncHandler(async (req, res) => {
+  const token = req.params.token;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user = await User.findById(decoded?.id);
+  if (user.isEmailVerified) {
+    res.json({
+      message: "true"
+    })
+  }
+  else {
+    res.json({
+      message: "false"
+    })
+  }
+});
+
+const sendVerificationEmail = asyncHandler(async (req, res) => {
+  const token = req.params.id;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user = await User.findById(decoded?.id);
+  const emailtoken = jwt.sign({
+    data: user.email
+  }, process.env.JWT_SECRET, { expiresIn: '10m' });
+  await sendResendEmail(
+    to = user.email,
+    subject = "Email Verification",
+    html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='http://localhost:5000/api/user/verifyEmail/${emailtoken}'>Click Here</>`
+  )
+  res.json({
+    message: "Email Sent"
+  })
+});
+
+const verifyEmail = asyncHandler(async (req, res) => {
+  const verificationToken = req.params.token;
+  const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET);
+  const user = await User.findOne({ email: decoded.data });
+  // Verifying the JWT token  
+  jwt.verify(verificationToken, process.env.JWT_SECRET, function (err, decoded) {
+    if (err) {
+      console.log(err);
+      res.send("Email verification failed, possibly the link is invalid or expired");
+    }
+    else {
+      res.send("Email verifified successfully");
+      User.updateOne({ email: decoded.data }, { isEmailVerified: true }, function (err, result) {
+        if (err) {
+          console.log(err);
+        }
+        else {
+          console.log("Email verification status updated successfully");
+        }
+      });
+    }
+  });
 });
 
 // Login a user
@@ -178,7 +237,6 @@ const saveAddress = asyncHandler(async (req, res, next) => {
 
 // Get all users
 const getallUser = asyncHandler(async (req, res) => {
-  console.log("Called get all user", req)
   try {
     const getUsers = await User.find({});
     res.json(getUsers);
@@ -190,7 +248,6 @@ const getallUser = asyncHandler(async (req, res) => {
 // Get a single user
 
 const getaUser = asyncHandler(async (req, res) => {
-  console.log("Called get a user")
   const { id } = req.params;
   validateMongoDbId(id);
 
@@ -220,47 +277,6 @@ const deleteaUser = asyncHandler(async (req, res) => {
   }
 });
 
-const blockUser = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  validateMongoDbId(id);
-
-  try {
-    const blockusr = await User.findByIdAndUpdate(
-      id,
-      {
-        isBlocked: true,
-      },
-      {
-        new: true,
-      }
-    );
-    res.json(blockusr);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-const unblockUser = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  validateMongoDbId(id);
-
-  try {
-    const unblock = await User.findByIdAndUpdate(
-      id,
-      {
-        isBlocked: false,
-      },
-      {
-        new: true,
-      }
-    );
-    res.json({
-      message: "User UnBlocked",
-    });
-  } catch (error) {
-    throw new Error(error);
-  }
-});
 
 const updatePassword = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -489,6 +505,7 @@ const getOrderByUserId = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
   const { id } = req.params;
@@ -517,8 +534,6 @@ module.exports = {
   getaUser,
   deleteaUser,
   updatedUser,
-  blockUser,
-  unblockUser,
   handleRefreshToken,
   logout,
   updatePassword,
@@ -536,4 +551,7 @@ module.exports = {
   updateOrderStatus,
   getAllOrders,
   getOrderByUserId,
+  isEmailVerified,
+  sendVerificationEmail,
+  verifyEmail
 };

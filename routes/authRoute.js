@@ -6,8 +6,6 @@ const {
   getaUser,
   deleteaUser,
   updatedUser,
-  blockUser,
-  unblockUser,
   handleRefreshToken,
   logout,
   updatePassword,
@@ -19,11 +17,13 @@ const {
   userCart,
   getUserCart,
   emptyCart,
-  applyCoupon,
+  isEmailVerified,
   createOrder,
   getOrders,
   updateOrderStatus,
   getAllOrders,
+  sendVerificationEmail,
+  verifyEmail,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -45,7 +45,6 @@ router.put(
   updateOrderStatus
 );
 
-
 router.get("/all-users", getallUser);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/getallorders", authMiddleware, isAdmin, getAllOrders);
@@ -59,11 +58,13 @@ router.get("/:id", authMiddleware, isAdmin, getaUser);
 
 router.put("/edit-user", authMiddleware, updatedUser);
 router.put("/save-address", authMiddleware, saveAddress);
-router.put("/block-user/:id", authMiddleware, isAdmin, blockUser);
-router.put("/unblock-user/:id", authMiddleware, isAdmin, unblockUser);
 
 
 router.delete("/empty-cart", authMiddleware, emptyCart);
 router.delete("/:id", deleteaUser);
+
+router.get("/verify-email/:token", isEmailVerified);
+router.get("/sendVerificationEmail/:id", sendVerificationEmail);
+router.get("/verifyEmail/:token", verifyEmail);
 
 module.exports = router;

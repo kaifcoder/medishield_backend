@@ -8,9 +8,8 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         token = req.headers.authorization.split(" ")[1];
         try {
             if (token) {
-                console.log(token);
+                // console.log(token);
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                console.log(decoded);
                 const user = await User.findById(decoded?.id);
                 // console.log(user);
                 req.user = user;
@@ -25,13 +24,11 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
     }
 });
 const isAdmin = asyncHandler(async (req, res, next) => {
-
     const { email } = req.user;
     const adminUser = await User.findOne({ email });
     if (adminUser.role !== "admin") {
         throw new Error("You are not an admin");
     } else {
-
         next();
     }
 });
