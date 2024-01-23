@@ -24,6 +24,8 @@ const {
   getAllOrders,
   sendVerificationEmail,
   verifyEmail,
+  loginWithGoogle,
+  isUserExists,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -66,5 +68,7 @@ router.delete("/:id", deleteaUser);
 router.get("/verify-email/:token", isEmailVerified);
 router.get("/sendVerificationEmail/:id", sendVerificationEmail);
 router.get("/verifyEmail/:token", verifyEmail);
+router.get("/loginWithGoogle/:uid", loginWithGoogle);
+router.get("/isUserExist/:uid", isUserExists);
 
 module.exports = router;

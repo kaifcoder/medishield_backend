@@ -92,18 +92,10 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
   // check if user exists or not
   const findUser = await User.findOne({ email });
   if (findUser && (await findUser.isPasswordMatched(password))) {
-    const refreshToken = generateRefreshToken(findUser?._id);
-    const updateuser = await User.findByIdAndUpdate(
-      findUser.id,
-      {
-        refreshToken: refreshToken,
-      },
-      { new: true }
-    );
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
-    });
+    // res.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   maxAge: 72 * 60 * 60 * 1000,
+    // });
     res.json({
       _id: findUser?._id,
       firstname: findUser?.firstname,
@@ -114,6 +106,38 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
     });
   } else {
     throw new Error("Invalid Credentials");
+  }
+});
+
+// google uid token login
+const loginWithGoogle = asyncHandler(async (req, res) => {
+  const { uid } = req.params.uid;
+  // check if user exists or not
+  const user = await User.findOne({ googleAuthToken: uid });
+  if (user) {
+    res.json({
+      _id: user?._id,
+      firstname: user?.firstname,
+      lastname: user?.lastname,
+      email: user?.email,
+      mobile: user?.mobile,
+      token: generateToken(user?._id),
+    });
+  } else {
+    throw new Error("Google Signin Failed Please use normal login");
+  }
+});
+
+const isUserExists = asyncHandler(async (req, res) => {
+  const { uid } = req.params.uid;
+  // check if user exists or not
+  const user = await User.findOne({ googleAuthToken: uid });
+  if (user) {
+    res.json({
+      status: true
+    });
+  } else {
+    throw new Error("user does not have google account signin setup");
   }
 });
 
@@ -553,5 +577,7 @@ module.exports = {
   getOrderByUserId,
   isEmailVerified,
   sendVerificationEmail,
-  verifyEmail
+  verifyEmail,
+  loginWithGoogle,
+  isUserExists
 };

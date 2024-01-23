@@ -23,7 +23,6 @@ var userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     role: {
       type: String,
@@ -32,6 +31,9 @@ var userSchema = new mongoose.Schema(
     isEmailVerified: {
       type: Boolean,
       default: false,
+    },
+    googleAuthToken: {
+      type: String,
     },
     cart: {
       type: Array,
