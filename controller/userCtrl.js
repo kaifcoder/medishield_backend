@@ -52,14 +52,18 @@ const sendVerificationEmail = asyncHandler(async (req, res) => {
   const emailtoken = jwt.sign({
     data: user.email
   }, process.env.JWT_SECRET, { expiresIn: '10m' });
-  await sendResendEmail(
-    to = user.email,
-    subject = "Email Verification",
-    html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='http://localhost:5000/api/user/verifyEmail/${emailtoken}'>Click Here</>`
-  )
-  res.json({
-    message: "Email Sent"
-  })
+  try {
+    await sendResendEmail(
+      to = user.email,
+      subject = "Email Verification",
+      html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='http://localhost:5000/api/user/verifyEmail/${emailtoken}'>Click Here</>`
+    )
+    res.json({
+      message: "Email Sent"
+    })
+  } catch (error) {
+    throw new Error(error);
+  }
 });
 
 const verifyEmail = asyncHandler(async (req, res) => {
@@ -138,6 +142,19 @@ const isUserExists = asyncHandler(async (req, res) => {
     });
   } else {
     throw new Error("user does not have google account signin setup");
+  }
+});
+
+
+const getUser = asyncHandler(async (req, res) => {
+  const email = req.params.email;
+  try {
+    const user = await User.findOne({ email: email });
+    res.json(user);
+  } catch (error) {
+    res.json({
+      error: error
+    });
   }
 });
 
@@ -285,14 +302,13 @@ const getaUser = asyncHandler(async (req, res) => {
   }
 });
 
-// Get a single user
 
 const deleteaUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
 
   try {
-    const deleteaUser = await User.findByIdAndDelete(id);
+    const deleteaUser = await User.deleteOne({ email: id });
     res.json({
       deleteaUser,
     });
@@ -323,18 +339,163 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
   try {
     const token = await user.createPasswordResetToken();
     await user.save();
-    const resetURL = `Hi, Please follow this link to reset Your Password. This link is valid till 10 minutes from now. <a href='http://localhost:5000/api/user/reset-password/${token}'>Click Here</>`;
-    const data = {
-      to: email,
-      text: "Hey User",
-      subject: "Forgot Password Link",
-      htm: resetURL,
-    };
-    sendEmail(data);
-    res.json(token);
+    const resetURL = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Reset</title>
+      <style>
+        body {
+          font-family: 'Arial', sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+        }
+    
+        .container {
+          text-align: center;
+          background-color: #fff;
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          width: 300px;
+        }
+    
+        h1 {
+          color: #333;
+        }
+    
+        p {
+          color: #555;
+          margin-top: 10px;
+          margin-bottom: 20px;
+        }
+    
+        a.button {
+          display: inline-block;
+          background-color: #3498db;
+          color: #fff;
+          text-decoration: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          transition: background-color 0.3s ease, color 0.3s ease;
+        }
+    
+        a.button:hover {
+          background-color: #2980b9;
+        }
+    
+       
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Password Reset</h1>
+        <p>Hi, Please follow this link to reset your password. This link is valid for the next 10 minutes.</p>
+        <a href='http://localhost:5000/api/user/reset-password/${token}' class="button">Click Here</a>
+      </div>
+    </body>
+    </html>
+    `;
+
+    sendResendEmail(
+      to = user.email,
+      subject = "Forgot Password Link",
+      html = resetURL,
+    );
+    res.json({ "token": token });
   } catch (error) {
     throw new Error(error);
   }
+});
+
+const resetPasswordForm = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  res.send(`
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+  
+      .container {
+        text-align: center;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+      }
+  
+      h1 {
+        color: #333;
+      }
+  
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+  
+      label {
+        margin-top: 10px;
+        color: #555;
+      }
+  
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+  
+      button {
+        background-color: #3498db;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+  
+      button:hover {
+        background-color: #2980b9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Password Reset</h1>
+      <form action="http://localhost:5000/api/user/reset-password/${token}" method="post">
+        <label for="password">New Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Reset Password</button>
+      </form>
+    </div>
+  </body>
+  </html>  
+  `);
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
@@ -350,7 +511,54 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   await user.save();
-  res.json(user);
+  // res.json(user);
+  res.send(
+    `
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Changed</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Password Changed Successfully</h1>
+    <p>Your password has been changed successfully. You can now log in with your new password.</p>
+  </div>
+</body>
+</html>
+    `
+  )
 });
 
 const getWishlist = asyncHandler(async (req, res) => {
@@ -424,29 +632,7 @@ const emptyCart = asyncHandler(async (req, res) => {
   }
 });
 
-const applyCoupon = asyncHandler(async (req, res) => {
-  const { coupon } = req.body;
-  const { _id } = req.user;
-  validateMongoDbId(_id);
-  const validCoupon = await Coupon.findOne({ name: coupon });
-  if (validCoupon === null) {
-    throw new Error("Invalid Coupon");
-  }
-  const user = await User.findOne({ _id });
-  let { cartTotal } = await Cart.findOne({
-    orderby: user._id,
-  }).populate("products.product");
-  let totalAfterDiscount = (
-    cartTotal -
-    (cartTotal * validCoupon.discount) / 100
-  ).toFixed(2);
-  await Cart.findOneAndUpdate(
-    { orderby: user._id },
-    { totalAfterDiscount },
-    { new: true }
-  );
-  res.json(totalAfterDiscount);
-});
+
 
 const createOrder = asyncHandler(async (req, res) => {
   const { COD, couponApplied } = req.body;
@@ -569,7 +755,6 @@ module.exports = {
   userCart,
   getUserCart,
   emptyCart,
-  applyCoupon,
   createOrder,
   getOrders,
   updateOrderStatus,
@@ -579,5 +764,7 @@ module.exports = {
   sendVerificationEmail,
   verifyEmail,
   loginWithGoogle,
-  isUserExists
+  isUserExists,
+  getUser,
+  resetPasswordForm
 };

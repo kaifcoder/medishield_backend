@@ -4,13 +4,12 @@ require("dotenv").config();
 const resend = new Resend(process.env.RESEND_API);
 
 async function sendResendEmail(
-
     to,
     subject,
     html
 ) {
     const { data, error } = await resend.emails.send({
-        from: 'Verify your email address <admin@darkinc.tech>',
+        from: 'MediShield-No-reply <admin@darkinc.tech>',
         to: [to],
         subject: subject,
         html: html,
