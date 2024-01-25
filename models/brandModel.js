@@ -1,4 +1,4 @@
-const mongoose = require("mongoose"); // Erase if already required
+const mongoose = require("mongoose");
 
 // Declare the Schema of the Mongo model
 var brandSchema = new mongoose.Schema(
@@ -10,10 +10,12 @@ var brandSchema = new mongoose.Schema(
     brand_id: {
       type: Number,
       required: true,
+      unique: true,
     },
     category_id: {
       type: Number,
       required: true,
+      unique: true,
     },
     logo: {
       type: String,
