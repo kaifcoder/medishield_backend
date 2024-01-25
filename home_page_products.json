@@ -29,37 +29,28 @@
     {
         "heading": "Orthodontics",
         "sku": [
-            "XXXXX00001-1147",
             "ident-moel534",
             "XXXXX00001-1426",
-            "lingualbrackets-grp"
+            "lingualbrackets-grp",
+            "IDEXX00307"
         ]
     },
     {
         "heading": "Endodontics",
         "sku": [
-            "WALXX00727",
             "MARXX00125",
-            "SUPXX00240",
-            "WOOXX00233"
-        ]
-    },
-    {
-        "heading": "EndoKing",
-        "sku": [
-            "ENDXX00146",
-            "XXXXX00001-432",
-            "ENDXX00175",
-            "XXXXX00001-635"
+            "WOOXX00233",
+            "IDEXX00303",
+            "ira-irrigaion"
         ]
     },
     {
         "heading": "Instruments",
         "sku": [
             "WALXX00441",
-            "XXXXX00001-594",
             "GDCXX00109",
-            "api-cassete"
+            "WALXX00786",
+            "WALXX00139"
         ]
     }
 ]
