@@ -1,68 +1,78 @@
-const mongoose = require("mongoose"); // Erase if already required
+const mongoose = require('mongoose');
 
-// Declare the Schema of the Mongo model
-var productSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    price: {
-      type: Number,
-      required: true,
-    },
-    category: {
-      type: String,
-      required: true,
-    },
-    brand: {
-      type: String,
-      required: true,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-    },
-    sold: {
-      type: Number,
-      default: 0,
-    },
-    images: [
-      {
-        public_id: String,
-        url: String,
-      },
-    ],
-    ratings: [
-      {
-        star: Number,
-        comment: String,
-        postedby: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      },
-    ],
-    totalrating: {
-      type: String,
-      default: 0,
-    },
-    productSpecs: {
-      type: Object,
-    },
-    childProducts: [
-      {
-        type: Object,
-      },
-    ],
-    qa_data: [
-      { type: Object }
-    ],
+const mediaEntrySchema = new mongoose.Schema({
+  id: Number,
+  media_type: String,
+  label: String,
+  file: String
+}, { _id: false });
+
+const categorySchema = new mongoose.Schema({
+  name: String
+}, { _id: false });
+
+const qaSchema = new mongoose.Schema({
+  question: String,
+  answer: String,
+  like: Number,
+  dislike: Number
+}, { _id: false });
+
+const priceSchema = new mongoose.Schema({
+  minimalPrice: Number,
+  maximalPrice: Number,
+  regularPrice: Number
+}, { _id: false });
+
+const productSchema = new mongoose.Schema({
+  id: Number,
+  name: String,
+  sku: String,
+  thumbnail_url: String,
+  short_description: String,
+  MediShieldCoin: Number,
+  manufacturer: String,
+  average_rating: String,
+  rating_count: String,
+  is_in_stock: Boolean,
+  is_cod: String,
+  weight: String,
+  max_sale_qty: Number,
+  pd_expiry_date: Date,
+  price: priceSchema,
+  media_gallery_entries: [mediaEntrySchema],
+  categories: [categorySchema],
+  qa_data: [qaSchema],
+  product_specs: {
+    description: String,
+    key_specifications: String,
+    packaging: String,
+    direction_to_use: String,
+    features: String
   },
-  { timestamps: true }
-);
+  banners: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Banner'
+  }],
+  featured: Boolean,
+  childProducts: [{
+    id: Number,
+    image_url: String,
+    name: String,
+    sku: String,
+    special_price: Number,
+    short_description: String,
+    manufacturer: String,
+    average_rating: String,
+    rating_count: String,
+    is_in_stock: Boolean,
+    pd_expiry_date: Date,
+    price: priceSchema,
+    media_gallery_entries: [mediaEntrySchema],
+    categories: [String]
+  }]
+});
 
-//Export the model
-module.exports = mongoose.model("Product", productSchema);
+const Product = mongoose.model('Product', productSchema);
+
+module.exports = Product;

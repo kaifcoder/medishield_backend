@@ -1,83 +1,76 @@
 const mongoose = require('mongoose');
 
-const tierPriceSchema = new mongoose.Schema({
-    qty: { type: Number, required: true },
-    value: { type: Number, required: true },
-});
-
-const mediaGalleryEntrySchema = new mongoose.Schema({
-    file: { type: String, required: true },
-});
+const mediaEntrySchema = new mongoose.Schema({
+    id: Number,
+    media_type: String,
+    label: String,
+    file: String
+}, { _id: false });
 
 const categorySchema = new mongoose.Schema({
-    name: { type: String, required: true },
-});
+    name: String
+}, { _id: false });
 
-const qaDataSchema = new mongoose.Schema({
-    question: { type: String, required: true },
-    answer: { type: String, required: true },
-    like: { type: Number, default: 0 },
-    dislike: { type: Number, default: 0 },
-});
+const qaSchema = new mongoose.Schema({
+    question: String,
+    answer: String,
+    like: Number,
+    dislike: Number
+}, { _id: false });
 
 const priceSchema = new mongoose.Schema({
-    minimalPrice: { type: Number, required: true },
-    maximalPrice: { type: Number, required: true },
-    regularPrice: { type: Number, required: true },
-});
-
-const productSpecsSchema = new mongoose.Schema({
-    description: { type: String, required: true },
-    key_specifications: { type: String, required: true },
-    packaging: { type: String, required: true },
-    direction_to_use: { type: String, required: true },
-    features: { type: String, required: true },
-});
-
-const childProductSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    image_url: { type: String, required: true },
-    sku: { type: String, required: true },
-    short_description: { type: String, required: true },
-    manufacturer: { type: String, required: true },
-    price: {
-        minimalPrice: {
-            amount: {
-                value: { type: Number, required: true },
-                currency: { type: String, required: true },
-            },
-        },
-        maximalPrice: {
-            amount: {
-                value: { type: Number, required: true },
-                currency: { type: String, required: true },
-            },
-        },
-        regularPrice: {
-            amount: {
-                value: { type: Number, required: true },
-                currency: { type: String, required: true },
-            },
-        },
-    },
-    tier_prices: { type: [{ qty: Number, value: Number }], default: [] },
-    media_gallery_entries: { type: [String], default: [] },
-});
+    minimalPrice: Number,
+    maximalPrice: Number,
+    regularPrice: Number
+}, { _id: false });
 
 const productSchema = new mongoose.Schema({
-    id: { type: Number, required: true },
-    name: { type: String, required: true },
-    sku: { type: String, required: true },
-    thumbnail_url: { type: String, required: true },
-    short_description: { type: String, required: true },
-    manufacturer: { type: Number, required: true },
-    price: { type: priceSchema, required: true },
-    tier_prices: { type: [tierPriceSchema], default: [] },
-    media_gallery_entries: { type: [mediaGalleryEntrySchema], default: [] },
-    categories: { type: [categorySchema], default: [] },
-    qa_data: { type: [qaDataSchema], default: [] },
-    product_specs: { type: productSpecsSchema, required: true },
-    childProducts: { type: childProductSchema, default: [] },
+    id: Number,
+    name: String,
+    sku: String,
+    thumbnail_url: String,
+    short_description: String,
+    MediShieldCoin: Number,
+    manufacturer: String,
+    average_rating: String,
+    rating_count: String,
+    is_in_stock: Boolean,
+    is_cod: String,
+    weight: String,
+    max_sale_qty: Number,
+    pd_expiry_date: Date,
+    price: priceSchema,
+    media_gallery_entries: [mediaEntrySchema],
+    categories: [categorySchema],
+    qa_data: [qaSchema],
+    product_specs: {
+        description: String,
+        key_specifications: String,
+        packaging: String,
+        direction_to_use: String,
+        features: String
+    },
+    banners: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Banner'
+    }],
+    featured: Boolean,
+    childProducts: [{
+        id: Number,
+        image_url: String,
+        name: String,
+        sku: String,
+        special_price: Number,
+        short_description: String,
+        manufacturer: String,
+        average_rating: String,
+        rating_count: String,
+        is_in_stock: Boolean,
+        pd_expiry_date: Date,
+        price: priceSchema,
+        media_gallery_entries: [mediaEntrySchema],
+        categories: [String]
+    }]
 });
 
 const Product = mongoose.model('Product', productSchema);
