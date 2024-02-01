@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const bannerSchema = new mongoose.Schema({
     web_image: String,
     mobile_image: String,
@@ -5,8 +7,9 @@ const bannerSchema = new mongoose.Schema({
     alt: String,
     small_image: String,
     title: String,
-    id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
-    }
+    id: Number,
 });
+
+const Banner = mongoose.model('Banner', bannerSchema);
+
+module.exports = Banner;

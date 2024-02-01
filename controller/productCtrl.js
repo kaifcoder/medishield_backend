@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongoDbId = require("../utils/validateMongodbId");
+const Banner = require("../models/bannerModel");
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -54,16 +55,29 @@ const getaProduct = asyncHandler(async (req, res) => {
   }
 });
 
-const getAllProductbyCategory = asyncHandler(async (req, res) => {
+const deleteAllProduct = asyncHandler(async (req, res) => {
   try {
-    const { category } = req.body;
-    const filter = {
+    const category = req.body.category;
+    const deleteProduct = await Product.deleteMany({
       'categories.name': category
-    };
-    const product = await Product.find(filter);
-    res.json(product);
+    });
+    res.json(deleteProduct);
+  } catch (error) {
+    throw new Error(error);
   }
-  catch (error) {
+});
+
+const getAllBannerProducts = asyncHandler(async (req, res) => {
+  try {
+    const banners = await Banner.find();
+    const productIds = banners.map((banner) => banner.id);
+    const products = await Product.find({ id: { $in: productIds } });
+    const bannerproducts = products.map((product) => {
+      const banner = banners.find((banner) => banner.id === product.id);
+      return { ...product._doc, banner };
+    });
+    res.json({ data: banners });
+  } catch (error) {
     throw new Error(error);
   }
 });
@@ -72,15 +86,19 @@ const getAllProduct = asyncHandler(async (req, res) => {
   try {
     // Filtering
     const queryObj = { ...req.query };
-    const excludeFields = ["page", "sort", "limit", "fields"];
+    console.log(queryObj);
+    const excludeFields = ["page", "sort", "limit", "fields", "category", "featured"];
     excludeFields.forEach((el) => delete queryObj[el]);
     let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    // if category is present then filter by category
+    if (req.query.category) {
+      queryStr = JSON.stringify({ ...queryObj, categories: { name: req.query.category } });
+    }
     let query = Product.find(JSON.parse(queryStr));
 
     // Sorting
-
     if (req.query.sort) {
       const sortBy = req.query.sort.split(",").join(" ");
       query = query.sort(sortBy);
@@ -89,7 +107,6 @@ const getAllProduct = asyncHandler(async (req, res) => {
     }
 
     // limiting the fields
-
     if (req.query.fields) {
       const fields = req.query.fields.split(",").join(" ");
       query = query.select(fields);
@@ -98,7 +115,6 @@ const getAllProduct = asyncHandler(async (req, res) => {
     }
 
     // pagination
-
     const page = req.query.page;
     const limit = req.query.limit;
     const skip = (page - 1) * limit;
@@ -108,11 +124,12 @@ const getAllProduct = asyncHandler(async (req, res) => {
       if (skip >= productCount) throw new Error("This Page does not exists");
     }
     const product = await query;
-    res.json(product);
+    res.json({ data: product });
   } catch (error) {
     throw new Error(error);
   }
 });
+
 const addToWishlist = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const { prodId } = req.body;
@@ -211,4 +228,6 @@ module.exports = {
   deleteProduct,
   addToWishlist,
   rating,
+  deleteAllProduct,
+  getAllBannerProducts,
 };

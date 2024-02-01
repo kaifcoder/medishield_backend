@@ -50,10 +50,6 @@ const productSchema = new mongoose.Schema({
     direction_to_use: String,
     features: String
   },
-  banners: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Banner'
-  }],
   featured: Boolean,
   childProducts: [{
     id: Number,
