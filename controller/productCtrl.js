@@ -46,10 +46,9 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 const getaProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDbId(id);
   try {
-    const findProduct = await Product.findById(id);
-    res.json(findProduct);
+    const findProduct = await Product.find({ id: id });
+    res.json({ data: findProduct });
   } catch (error) {
     throw new Error(error);
   }
@@ -86,7 +85,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
   try {
     // Filtering
     const queryObj = { ...req.query };
-    console.log(queryObj);
+
     const excludeFields = ["page", "sort", "limit", "fields", "category", "featured"];
     excludeFields.forEach((el) => delete queryObj[el]);
     let queryStr = JSON.stringify(queryObj);
