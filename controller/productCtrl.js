@@ -85,12 +85,17 @@ const getAllProduct = asyncHandler(async (req, res) => {
   try {
     // Filtering
     const queryObj = { ...req.query };
-
-    const excludeFields = ["page", "sort", "limit", "fields", "category", "featured"];
+    const excludeFields = ["page", "sort", "limit", "fields", "category", "featured", "search"];
     excludeFields.forEach((el) => delete queryObj[el]);
     let queryStr = JSON.stringify(queryObj);
 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+    // if search is present then filter by search
+    if (req.query.search) {
+      queryStr = JSON.stringify({ ...queryObj, name: { $regex: req.query.search, $options: "i" } });
+    }
+
     // if category is present then filter by category
     if (req.query.category) {
       queryStr = JSON.stringify({ ...queryObj, categories: { name: req.query.category } });
@@ -162,6 +167,8 @@ const addToWishlist = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
+
 
 const rating = asyncHandler(async (req, res) => {
   const { _id } = req.user;

@@ -565,42 +565,111 @@ const getWishlist = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   try {
     const findUser = await User.findById(_id).populate("wishlist");
-    res.json(findUser);
+    res.json({ "data": findUser.wishlist });
   } catch (error) {
     throw new Error(error);
   }
 });
 
 const userCart = asyncHandler(async (req, res) => {
-  const { cart } = req.body;
+  const { product } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
-    let products = [];
     const user = await User.findById(_id);
-    // check if user already have product in cart
     const alreadyExistCart = await Cart.findOne({ orderby: user._id });
     if (alreadyExistCart) {
-      alreadyExistCart.remove();
+      const productExist = alreadyExistCart.products.find(
+        (p) => p.variant == product.variant
+      );
+      if (productExist) {
+        console.log("product exist")
+        const updatedCart = await Cart.findOneAndUpdate(
+          {
+            "products.variant": product.variant,
+          },
+          {
+            $inc: {
+              "products.$.count": product.count,
+              "cartTotal": product.price * product.count
+            },
+          },
+          { new: true }
+        );
+        return res.json(updatedCart);
+      } else {
+        const updatedCart = await Cart.findOneAndUpdate(
+          { orderby: user._id },
+          {
+            $push: {
+              products: {
+                product: product.productId,
+                count: product.count,
+                variant: product.variant,
+                price: product.price,
+              },
+            },
+            $inc: { "cartTotal": product.price * product.count }
+          },
+          { new: true }
+        );
+        return res.json(updatedCart);
+      }
     }
-    for (let i = 0; i < cart.length; i++) {
-      let object = {};
-      object.product = cart[i]._id;
-      object.count = cart[i].count;
-      let getPrice = await Product.findById(cart[i]._id).select("price").exec();
-      object.price = getPrice.price;
-      products.push(object);
+    else {
+      cartTotal = product.price * product.count;
+      let newCart = await new Cart({
+        products: [
+          {
+            product: product.productId,
+            count: product.count,
+            variant: product.variant,
+            price: product.price,
+          },
+        ],
+        cartTotal,
+        orderby: user?._id,
+      }).save();
+      return res.json(newCart);
     }
-    let cartTotal = 0;
-    for (let i = 0; i < products.length; i++) {
-      cartTotal = cartTotal + products[i].price * products[i].count;
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const removeCartItem = asyncHandler(async (req, res) => {
+  const { product } = req.body;
+  const { _id } = req.user;
+  validateMongoDbId(_id);
+  try {
+    const user = await User.findById(_id);
+    const alreadyExistCart = await Cart.findOne({ orderby: user._id });
+    if (alreadyExistCart) {
+      const productExist = alreadyExistCart.products.find(
+        (p) => p.variant == product.variant
+      );
+      if (productExist) {
+        const updatedCart = await Cart.findOneAndUpdate(
+          {
+            "products.variant": product.variant,
+          },
+          {
+            $set: {
+              cartTotal: alreadyExistCart.cartTotal - productExist.price * productExist.count
+            },
+            $pull: {
+              "products": productExist,
+            }
+          },
+          { new: true }
+        );
+
+        return res.json(updatedCart);
+      }
+    } else {
+      throw new Error("No Cart Found");
     }
-    let newCart = await new Cart({
-      products,
-      cartTotal,
-      orderby: user?._id,
-    }).save();
-    res.json(newCart);
+
   } catch (error) {
     throw new Error(error);
   }
@@ -613,7 +682,7 @@ const getUserCart = asyncHandler(async (req, res) => {
     const cart = await Cart.findOne({ orderby: _id }).populate(
       "products.product"
     );
-    res.json(cart);
+    res.json({ "data": cart });
   } catch (error) {
     throw new Error(error);
   }
@@ -632,6 +701,7 @@ const emptyCart = asyncHandler(async (req, res) => {
 });
 
 
+// post checkout order creation
 
 const createOrder = asyncHandler(async (req, res) => {
   const { COD, couponApplied } = req.body;
@@ -765,5 +835,6 @@ module.exports = {
   loginWithGoogle,
   isUserExists,
   getUser,
-  resetPasswordForm
+  resetPasswordForm,
+  removeCartItem,
 };

@@ -28,6 +28,7 @@ const {
   isUserExists,
   getUser,
   resetPasswordForm,
+  removeCartItem,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -35,7 +36,9 @@ const router = express.Router();
 router.post("/login", loginUserCtrl);
 router.post("/register", createUser);
 router.post("/admin-login", loginAdmin);
+
 router.post("/cart", authMiddleware, userCart);
+router.post("/cart/remove", authMiddleware, removeCartItem);
 router.post("/cart/cash-order", authMiddleware, createOrder);
 router.post("/getorderbyuser/:id", authMiddleware, isAdmin, getAllOrders);
 

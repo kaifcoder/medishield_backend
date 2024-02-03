@@ -10,6 +10,7 @@ var cartSchema = new mongoose.Schema(
           ref: "Product",
         },
         count: Number,
+        variant: String,
         price: Number,
       },
     ],

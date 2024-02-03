@@ -13,6 +13,7 @@ const productRouter = require("./routes/productRoute");
 const categoryRouter = require("./routes/prodcategoryRoute");
 
 const brandRouter = require("./routes/brandRoute");
+const cartRouter = require("./routes/cartRoute");
 
 const enqRouter = require("./routes/enqRoute");
 const uploadRouter = require("./routes/uploadRoute");
@@ -32,6 +33,7 @@ app.use("/api/category", categoryRouter);
 app.use("/api/brand", brandRouter);
 app.use("/api/enquiry", enqRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/cart", cartRouter)
 
 app.use(notFound);
 app.use(errorHandler);
