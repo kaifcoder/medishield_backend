@@ -42,6 +42,8 @@ const getEnquiry = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
+
 const getallEnquiry = asyncHandler(async (req, res) => {
   try {
     const getallEnquiry = await Enquiry.find();

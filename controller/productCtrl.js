@@ -169,7 +169,6 @@ const addToWishlist = asyncHandler(async (req, res) => {
 });
 
 
-
 const rating = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const { star, prodId, comment } = req.body;

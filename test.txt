@@ -46,20 +46,6 @@ order schema ->
 5. order_items -> [object of order items {product_id, product_name, product_sku, product_price, product_quantity, product_image_url}]
 6. shipping_address -> [object of shipping address {address1, address2, city, state, country, zip}]
 
-wishlist schema ->
-1. product_id
-2. product_name
-3. product_sku
-4. product_price
-5. product_image_url
-
-cart schema ->
-1. product_id
-2. product_name
-3. product_sku
-4. product_price
-5. product_quantity
-6. product_image_url
 
 reviews schema ->
 1. product_id

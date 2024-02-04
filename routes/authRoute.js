@@ -39,7 +39,7 @@ router.post("/admin-login", loginAdmin);
 
 router.post("/cart", authMiddleware, userCart);
 router.post("/cart/remove", authMiddleware, removeCartItem);
-router.post("/cart/cash-order", authMiddleware, createOrder);
+router.post("/cart/create-order", authMiddleware, createOrder);
 router.post("/getorderbyuser/:id", authMiddleware, isAdmin, getAllOrders);
 
 router.post("/forgot-password-token", forgotPasswordToken);

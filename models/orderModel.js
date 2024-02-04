@@ -9,19 +9,18 @@ var orderSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
         },
-        count: Number
+        count: Number,
+        variant: String,
+        price: Number
       },
     ],
     paymentIntent: {},
     orderStatus: {
       type: String,
-      default: "Not Processed",
+      default: "Processing",
       enum: [
-        "Not Processed",
-        "Cash on Delivery",
         "Processing",
-        "Dispatched",
-        "Cancelled",
+        "Shipped", // AWB number -> order update
         "Delivered",
       ],
     },

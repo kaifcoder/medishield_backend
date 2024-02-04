@@ -63,6 +63,8 @@ const getallCategory = asyncHandler(async (req, res) => {
   }
 });
 
+
+
 const getFeaturedCategory = asyncHandler(async (req, res) => {
   try {
     const getFeaturedCategory = await newCategory.find({ featured: true });
