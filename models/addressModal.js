@@ -1,18 +1,15 @@
-import { Schema, model } from "mongoose";
-var addressSchema = new Schema({
-    address: {
-        type: String,
-        required: true,
-    },
+const mongoose = require("mongoose");
+var addressSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
     },
-    mobile: {
+    address: {
         type: String,
         required: true,
+        unique: true,
     },
-    pincode: {
+    mobile: {
         type: String,
         required: true,
     },
@@ -23,7 +20,15 @@ var addressSchema = new Schema({
     state: {
         type: String,
         required: true,
-    }
+    },
+    country: {
+        type: String,
+        required: true,
+    },
+    pincode: {
+        type: String,
+        required: true,
+    },
 });
 
-export default model("Address", addressSchema);
+module.exports = mongoose.model("Address", addressSchema);

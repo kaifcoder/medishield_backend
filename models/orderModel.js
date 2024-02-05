@@ -28,6 +28,10 @@ var orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    shippingAddress: {
+      type: {},
+      ref: "Address",
+    },
   },
   {
     timestamps: true,

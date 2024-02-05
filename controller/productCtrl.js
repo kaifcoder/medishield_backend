@@ -93,7 +93,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
     // if search is present then filter by search
     if (req.query.search) {
-      queryStr = JSON.stringify({ ...queryObj, name: { $regex: req.query.search, $options: "i" } });
+      queryStr = JSON.stringify({ ...queryObj, name: { $regex: req.query.search, $options: "i" }, description: { $regex: req.query.search, $options: "i" } });
     }
 
     // if category is present then filter by category

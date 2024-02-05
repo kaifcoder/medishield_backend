@@ -1,8 +1,8 @@
 const User = require("../models/userModel");
 const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
+const Address = require("../models/addressModal");
 const Order = require("../models/orderModel");
-const uniqid = require("uniqid");
 
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
@@ -256,21 +256,78 @@ const updatedUser = asyncHandler(async (req, res) => {
 });
 
 // save user Address
-const saveAddress = asyncHandler(async (req, res, next) => {
+const saveAddress = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
-
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      _id,
-      {
-        address: req?.body?.address,
-      },
-      {
-        new: true,
-      }
+    const existingAddress = await Address.findOne({ address: req?.body?.address });
+    if (!existingAddress) {
+      const address = await new Address(req.body).save();
+      const updatedUser = await User.findByIdAndUpdate(
+        _id,
+        {
+          $push: { address: address._id },
+        },
+        {
+          new: true,
+        }
+      );
+      res.json({ data: updatedUser.address });
+    } else {
+      throw new Error("Address Already Exists");
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const getAddresses = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
+  try {
+    const user = await User.findById(_id).populate("address");
+    res.json({ "data": user.address });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const deleteAddress = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
+    const address = await Address.findByIdAndRemove(id);
+    const user = await User.findOneAndUpdate(
+      { address: id },
+      { $pull: { address: address._id } },
+      { new: true }
     );
-    res.json(updatedUser);
+    res.json({ data: address });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const updateAddress = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
+    const address = await Address.findByIdAndUpdate
+      (id,
+        {
+          name: req?.body?.name,
+          address: req?.body?.address,
+          mobile: req?.body?.mobile,
+          city: req?.body?.city,
+          state: req?.body?.state,
+          country: req?.body?.country,
+          pincode: req?.body?.pincode,
+        },
+        {
+          new: true,
+        }
+      );
+    res.json({ data: address });
   } catch (error) {
     throw new Error(error);
   }
@@ -707,7 +764,7 @@ const emptyCart = asyncHandler(async (req, res) => {
 
 // post checkout order creation
 const createOrder = asyncHandler(async (req, res) => {
-  const { paymentId, amount, shipping } = req.body;
+  const { paymentId, amount, shipping, shippingAddress } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
@@ -729,26 +786,19 @@ const createOrder = asyncHandler(async (req, res) => {
         shipping: shipping,
         created: Date.now(),
         currency: "INR",
-
       },
       orderby: user._id,
       orderStatus: "Processing",
+      shippingAddress: shippingAddress,
     }).save();
-    // let update = userCart.products.map((item) => {
-    //   return {
-    //     updateOne: {
-    //       filter: { _id: item.product._id },
-    //       update: { $inc: { quantity: -item.count, sold: +item.count } },
-    //     },
-    //   };
-    // });
-    // const updated = await Product.bulkWrite(update, {});
+    console.log(newOrder);
     res.json({ message: "success" });
   } catch (error) {
     throw new Error(error);
   }
 });
 
+// get all orders for user
 const getOrders = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
@@ -845,4 +895,7 @@ module.exports = {
   getUser,
   resetPasswordForm,
   removeCartItem,
+  getAddresses,
+  deleteAddress,
+  updateAddress
 };

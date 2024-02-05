@@ -63,7 +63,7 @@ const productSchema = new mongoose.Schema({
     rating_count: String,
     is_in_stock: Boolean,
     pd_expiry_date: Date,
-    price: priceSchema,
+    price: {},
     media_gallery_entries: [mediaEntrySchema],
     categories: [String]
   }]

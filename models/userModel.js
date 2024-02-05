@@ -35,14 +35,10 @@ var userSchema = new mongoose.Schema(
     googleAuthToken: {
       type: String,
     },
-    cart: {
-      type: Array,
-      default: [],
-    },
-    address: {
+    address: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
-    },
+    }],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
     refreshToken: {
       type: String,
