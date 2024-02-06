@@ -45,6 +45,7 @@ const isEmailVerified = asyncHandler(async (req, res) => {
   }
 });
 
+
 const sendVerificationEmail = asyncHandler(async (req, res) => {
   const token = req.params.id;
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
