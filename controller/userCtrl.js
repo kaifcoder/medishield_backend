@@ -15,14 +15,13 @@ require("dotenv").config();
 
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
-  const mobile = req.body.mobile;
   const findUser = await User.findOne({ email: email });
-  const findUserWithMobile = await User.findOne({ mobile: mobile });
-  if (!findUser && !findUserWithMobile) {
+  if (!findUser) {
     const newUser = await User.create(req.body);
     res.json({
       newUser,
       token: generateToken(newUser?._id),
+      email: newUser?.email,
     });
   } else {
     throw new Error("User Already Exists Please Login");
@@ -69,7 +68,7 @@ const sendVerificationEmail = asyncHandler(async (req, res) => {
 const verifyEmail = asyncHandler(async (req, res) => {
   const verificationToken = req.params.token;
   const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET);
-  const user = await User.findOne({ email: decoded.data });
+  const user = await User.find({ email: decoded.data });
   // Verifying the JWT token  
   jwt.verify(verificationToken, process.env.JWT_SECRET, function (err, decoded) {
     if (err) {
@@ -115,9 +114,10 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
 
 // google uid token login
 const loginWithGoogle = asyncHandler(async (req, res) => {
-  const { uid } = req.params.uid;
+  const { uid } = req.params;
   // check if user exists or not
   const user = await User.findOne({ googleAuthToken: uid });
+  console.log(user);
   if (user) {
     res.json({
       _id: user?._id,
@@ -125,6 +125,7 @@ const loginWithGoogle = asyncHandler(async (req, res) => {
       lastname: user?.lastname,
       email: user?.email,
       mobile: user?.mobile,
+      isEmailVerified: user?.isEmailVerified,
       token: generateToken(user?._id),
     });
   } else {
@@ -133,15 +134,21 @@ const loginWithGoogle = asyncHandler(async (req, res) => {
 });
 
 const isUserExists = asyncHandler(async (req, res) => {
-  const { uid } = req.params.uid;
-  // check if user exists or not
-  const user = await User.findOne({ googleAuthToken: uid });
-  if (user) {
-    res.json({
-      status: true
-    });
-  } else {
-    throw new Error("user does not have google account signin setup");
+  try {
+    const { uid } = req.params;
+    const user = await User.findOne({ googleAuthToken: uid });
+    console.log(user);
+    if (user) {
+      res.json({
+        status: true
+      });
+    } else {
+      res.json({
+        status: false
+      });
+    }
+  } catch (error) {
+    throw new Error('User not found');
   }
 });
 

@@ -35,6 +35,10 @@ app.use("/api/enquiry", enqRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/cart", cartRouter)
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ message: "Everything is healthy" });
+});
+
 app.use(notFound);
 app.use(errorHandler);
 app.listen(PORT, "0.0.0.0", () => {

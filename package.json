@@ -27,9 +27,7 @@
     "resend": "^3.0.0",
     "sharp": "",
     "slugify": "^1.6.5",
-    "uniqid": "^5.4.0"
-  },
-  "devDependencies": {
+    "uniqid": "^5.4.0",
     "nodemon": "^2.0.20"
   }
 }

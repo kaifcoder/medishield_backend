@@ -19,7 +19,6 @@ var userSchema = new mongoose.Schema(
     },
     mobile: {
       type: String,
-      unique: true,
     },
     password: {
       type: String,
@@ -34,6 +33,7 @@ var userSchema = new mongoose.Schema(
     },
     googleAuthToken: {
       type: String,
+      unique: true,
     },
     address: [{
       type: mongoose.Schema.Types.ObjectId,

@@ -39,6 +39,11 @@ const router = express.Router();
 router.post("/login", loginUserCtrl);
 router.post("/register", createUser);
 router.post("/admin-login", loginAdmin);
+router.get("/isUserExist/:uid", isUserExists);
+router.get("/verify-email/:token", isEmailVerified);
+router.get("/sendVerificationEmail/:id", sendVerificationEmail);
+router.get("/verifyEmail/:token", verifyEmail);
+router.get("/loginWithGoogle/:uid", loginWithGoogle);
 
 router.post("/cart", authMiddleware, userCart);
 router.post("/cart/remove", authMiddleware, removeCartItem);
@@ -81,10 +86,5 @@ router.delete("/address/:id", authMiddleware, deleteAddress);
 
 
 
-router.get("/verify-email/:token", isEmailVerified);
-router.get("/sendVerificationEmail/:id", sendVerificationEmail);
-router.get("/verifyEmail/:token", verifyEmail);
-router.get("/loginWithGoogle/:uid", loginWithGoogle);
-router.get("/isUserExist/:uid", isUserExists);
 
 module.exports = router;
