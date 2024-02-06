@@ -12,6 +12,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { sendResendEmail } = require("../utils/sendResendEmail");
 require("dotenv").config();
+const BASE_URL = process.env.BASE_URL;
 
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
@@ -55,7 +56,7 @@ const sendVerificationEmail = asyncHandler(async (req, res) => {
     await sendResendEmail(
       to = user.email,
       subject = "Email Verification",
-      html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='http://localhost:5000/api/user/verifyEmail/${emailtoken}'>Click Here</>`
+      html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='${BASE_URL}/api/user/verifyEmail/${emailtoken}'>Click Here</>`
     )
     res.json({
       message: "Email Sent"
@@ -461,7 +462,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
       <div class="container">
         <h1>Password Reset</h1>
         <p>Hi, Please follow this link to reset your password. This link is valid for the next 10 minutes.</p>
-        <a href='http://localhost:5000/api/user/reset-password/${token}' class="button">Click Here</a>
+        <a href='${BASE_URL}/api/user/reset-password/${token}' class="button">Click Here</a>
       </div>
     </body>
     </html>
@@ -551,7 +552,7 @@ const resetPasswordForm = asyncHandler(async (req, res) => {
   <body>
     <div class="container">
       <h1>Password Reset</h1>
-      <form action="http://localhost:5000/api/user/reset-password/${token}" method="post">
+      <form action="${BASE_URL}/api/user/reset-password/${token}" method="post">
         <label for="password">New Password:</label>
         <input type="password" id="password" name="password" required>
         <button type="submit">Reset Password</button>
