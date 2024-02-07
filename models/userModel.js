@@ -43,6 +43,10 @@ var userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    referralCode: {
+      type: String,
+      unique: true,
+    },
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -71,6 +75,12 @@ userSchema.methods.createPasswordResetToken = async function () {
     .digest("hex");
   this.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 10 minutes
   return resettoken;
+};
+
+userSchema.methods.createReferralCode = async function () {
+  const referralCode = crypto.randomBytes(3).toString("hex");
+  this.referralCode = referralCode;
+  return referralCode;
 };
 
 //Export the model
