@@ -25,10 +25,7 @@ user schema ->
 5. password
 6. isVerified -> boolean
 6. address -> [object of address {address1, address2, city, state, country, zip}]
-7. orders -> [object of orders {order_id, order_date, order_status, order_total, order_items -> [object of order items {product_id, product_name, product_sku, product_price, product_quantity, product_image_url}]}]
 8. wishlist -> [object of wishlist {product_id, product_name, product_sku, product_price, product_image_url}]
-9. cart -> [object of cart {product_id, product_name, product_sku, product_price, product_quantity, product_image_url}]
-10. reviews -> [object of reviews {product_id, product_name, product_sku, product_price, product_quantity, product_image_url, review_title, review_description, review_rating, review_date}]
 
 address schema ->
 1. address1

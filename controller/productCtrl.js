@@ -100,6 +100,8 @@ const getAllProduct = asyncHandler(async (req, res) => {
     if (req.query.category) {
       queryStr = JSON.stringify({ ...queryObj, categories: { name: req.query.category } });
     }
+
+
     let query = Product.find(JSON.parse(queryStr));
 
     // Sorting

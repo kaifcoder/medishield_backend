@@ -11,6 +11,7 @@ const { generateRefreshToken } = require("../config/refreshtoken");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { sendResendEmail } = require("../utils/sendResendEmail");
+
 require("dotenv").config();
 const BASE_URL = process.env.BASE_URL;
 
@@ -652,22 +653,29 @@ const userCart = asyncHandler(async (req, res) => {
       const productExist = alreadyExistCart.products.find(
         (p) => p.variant == product.variant
       );
+
       if (productExist) {
         console.log("product exist")
+        console.log(productExist);
+        console.log(product.price * product.count);
+        console.log(alreadyExistCart.cartTotal + product.price * product.count)
         const updatedCart = await Cart.findOneAndUpdate(
           {
+            orderby: user._id,
             "products.variant": product.variant,
           },
           {
             $inc: {
               "products.$.count": product.count,
-              "cartTotal": product.price * product.count
+              cartTotal: product.price * product.count
             },
           },
           { new: true }
         );
         return res.json(updatedCart);
       } else {
+        console.log("product not exist")
+        console.log(product)
         const updatedCart = await Cart.findOneAndUpdate(
           { orderby: user._id },
           {
@@ -679,7 +687,7 @@ const userCart = asyncHandler(async (req, res) => {
                 price: product.price,
               },
             },
-            $inc: { "cartTotal": product.price * product.count }
+            $set: { cartTotal: alreadyExistCart.cartTotal + product.price * product.count }
           },
           { new: true }
         );
@@ -687,6 +695,7 @@ const userCart = asyncHandler(async (req, res) => {
       }
     }
     else {
+      console.log("no cart found")
       cartTotal = product.price * product.count;
       let newCart = await new Cart({
         products: [
@@ -718,9 +727,13 @@ const removeCartItem = asyncHandler(async (req, res) => {
       const productExist = alreadyExistCart.products.find(
         (p) => p.variant == product.variant
       );
+
+      console.log(productExist);
+      console.log(productExist.count * productExist.price);
       if (productExist) {
         const updatedCart = await Cart.findOneAndUpdate(
           {
+            orderby: user._id,
             "products.variant": product.variant,
           },
           {
