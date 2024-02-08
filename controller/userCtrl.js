@@ -169,7 +169,6 @@ const getUser = asyncHandler(async (req, res) => {
 });
 
 // admin login
-
 const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   // check if user exists or not
@@ -184,7 +183,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
     //   },
     //   { new: true }
     // );
-    res.cookie("token", refreshToken, {
+    res.cookie("token", token, {
       httpOnly: true,
     });
     res.json({
@@ -200,7 +199,6 @@ const loginAdmin = asyncHandler(async (req, res) => {
 });
 
 // handle refresh token
-
 const handleRefreshToken = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
   if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
