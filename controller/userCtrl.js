@@ -177,13 +177,6 @@ const loginAdmin = asyncHandler(async (req, res) => {
   if (findAdmin.role !== "admin") throw new Error("Not Authorised");
   if (findAdmin && (await findAdmin.isPasswordMatched(password))) {
     const token = await generateToken(findAdmin?._id);
-    // const updateuser = await User.findByIdAndUpdate(
-    //   findAdmin.id,
-    //   {
-    //     refreshToken: refreshToken,
-    //   },
-    //   { new: true }
-    // );
     res.cookie("token", token, {
       httpOnly: true,
     });
