@@ -192,6 +192,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
       lastname: findAdmin?.lastname,
       email: findAdmin?.email,
       mobile: findAdmin?.mobile,
+      token: token,
     });
   } else {
     throw new Error("Invalid Credentials");
