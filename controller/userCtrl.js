@@ -879,6 +879,20 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 });
 
+const getSingleOrder = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
+    const order = await Order.findById(id)
+      .populate("products.product")
+      .populate("orderby")
+      .exec();
+    res.json(order);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 module.exports = {
   createUser,
   loginUserCtrl,
@@ -912,5 +926,6 @@ module.exports = {
   removeCartItem,
   getAddresses,
   deleteAddress,
-  updateAddress
+  updateAddress,
+  getSingleOrder,
 };

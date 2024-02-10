@@ -32,6 +32,7 @@ const {
   getAddresses,
   deleteAddress,
   updateAddress,
+  getSingleOrder,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -65,6 +66,7 @@ router.put(
 router.get("/all-users", getallUser);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/getallorders", authMiddleware, isAdmin, getAllOrders);
+router.get("/getOrderDetails/:id", authMiddleware, isAdmin, getSingleOrder);
 router.get("/refresh", handleRefreshToken);
 router.get("/logout", logout);
 router.get("/wishlist", authMiddleware, getWishlist);
