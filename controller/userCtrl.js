@@ -809,9 +809,16 @@ const createOrder = asyncHandler(async (req, res) => {
     console.log(newOrder);
     // send emails to user
     sendResendEmail(
-      to = [user.email, "kaifmohd2014@gmail.com"],
+      to = user.email,
       subject = "Order Placed",
       html = `Hi, Your order has been placed successfully. Your order id is ${newOrder._id}`
+    );
+    sendResendEmail(
+      to = "tipsntricks395@gmail.com",
+      subject = "Order Placed",
+      html = `Hi admin, A new order has been placed with order id ${newOrder._id} and amount ${amount} INR
+          by ${user.firstname} ${user.lastname} with email ${user.email}
+      `
     );
     // send emails to admin
     res.json({ message: "success" });
