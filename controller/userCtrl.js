@@ -684,7 +684,7 @@ const userCart = asyncHandler(async (req, res) => {
           },
           { new: true }
         );
-        return res.json(updatedCart);
+        return res.json({ "data": updatedCart });
       }
     }
     else {
@@ -818,7 +818,7 @@ const createOrder = asyncHandler(async (req, res) => {
       subject = `New Order Arrived ${newOrder._id}`,
       html = `Hi admin, A new order has been placed with order id ${newOrder._id} and amount ${amount} INR
       by ${shippingAddress.name} with email ${user.email} and mobile ${shippingAddress.mobile}
-            ship to ${shippingAddress.address} ${shippingAddress.city} ${shippingAddress.state} ${shippingAddress.country} ${shippingAddress.pincode} `
+            ship to ${shippingAddress.address} ${shippingAddress.city} ${shippingAddress.state} ${shippingAddress.country} ${shippingAddress.pincode}`
     );
     // send emails to admin
     res.json({ message: "success" });
