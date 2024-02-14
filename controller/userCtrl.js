@@ -665,7 +665,7 @@ const userCart = asyncHandler(async (req, res) => {
           },
           { new: true }
         );
-        return res.json(updatedCart);
+        return res.json(updatedCart.populate("products.product"));
       } else {
         console.log("product not exist")
         console.log(product)
