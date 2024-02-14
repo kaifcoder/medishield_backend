@@ -665,7 +665,7 @@ const userCart = asyncHandler(async (req, res) => {
           },
           { new: true }
         );
-        return res.json(updatedCart.populate("products.product"));
+        return res.json(await updatedCart.populate("products.product"));
       } else {
         console.log("product not exist")
         console.log(product)
@@ -684,7 +684,7 @@ const userCart = asyncHandler(async (req, res) => {
           },
           { new: true }
         );
-        return res.json(updatedCart.populate("products.product"));
+        return res.json(await updatedCart.populate("products.product"));
       }
     }
     else {
@@ -702,7 +702,8 @@ const userCart = asyncHandler(async (req, res) => {
         cartTotal,
         orderby: user?._id,
       }).save();
-      return res.json(newCart.populate("products.product"));
+      result = await newCart.populate("products.product");
+      return res.json(result);
     }
   } catch (error) {
     throw new Error(error);
