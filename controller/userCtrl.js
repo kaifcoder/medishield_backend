@@ -684,7 +684,7 @@ const userCart = asyncHandler(async (req, res) => {
           },
           { new: true }
         );
-        return res.json({ "data": updatedCart });
+        return res.json(updatedCart.populate("products.product"));
       }
     }
     else {
@@ -702,7 +702,7 @@ const userCart = asyncHandler(async (req, res) => {
         cartTotal,
         orderby: user?._id,
       }).save();
-      return res.json(newCart);
+      return res.json(newCart.populate("products.product"));
     }
   } catch (error) {
     throw new Error(error);
