@@ -136,6 +136,15 @@ const getAllProduct = asyncHandler(async (req, res) => {
   }
 });
 
+const getAllProductsAdmin = asyncHandler(async (req, res) => {
+  try {
+    const product = await Product.find();
+    res.json({ data: product });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 const addToWishlist = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const { prodId } = req.body;
