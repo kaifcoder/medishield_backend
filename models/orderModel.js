@@ -28,6 +28,9 @@ var orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    trackingNumber: {
+      type: String,
+    },
     shippingAddress: {
       type: {},
       ref: "Address",

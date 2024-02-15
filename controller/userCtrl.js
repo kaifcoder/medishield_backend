@@ -874,7 +874,7 @@ const getOrderByUserId = asyncHandler(async (req, res) => {
 });
 
 const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
+  const { status, trackingnumber } = req.body;
   const { id } = req.params;
   validateMongoDbId(id);
   try {
@@ -882,9 +882,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       id,
       {
         orderStatus: status,
-        paymentIntent: {
-          status: status,
-        },
+        trackingNumber: trackingnumber,
       },
       { new: true }
     );
