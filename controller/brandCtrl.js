@@ -8,6 +8,7 @@ const createBrand = asyncHandler(async (req, res) => {
       name: req.body.name,
       brand_id: req.body.brand_id,
       logo: req.body.logo,
+
     });
 
     res.json(newBrand);

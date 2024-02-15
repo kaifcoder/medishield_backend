@@ -9,8 +9,9 @@ var brandSchema = new mongoose.Schema(
     },
     brand_id: {
       type: Number,
-      required: true,
-      unique: true,
+    },
+    category_id: {
+      type: Number,
     },
     logo: {
       type: String,
