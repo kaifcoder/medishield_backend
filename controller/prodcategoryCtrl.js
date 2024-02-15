@@ -42,7 +42,9 @@ const updateChildrenCategory = asyncHandler(async (req, res) => {
     // Construct the update operation to push the new document into the subcategory's array
     const update = {
       $push: {
-        "children.$.documents": req.body
+        "children": {
+          name: req.body.name,
+        }
       }
     };
     const updatedCategory = await Category.updateOne(query, update);
