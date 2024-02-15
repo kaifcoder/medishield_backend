@@ -26,6 +26,6 @@ router.put("/:id", authMiddleware, isAdmin, updateProduct);
 router.delete("/:id", authMiddleware, isAdmin, deleteProduct);
 
 router.get("/", getAllProduct);
-router.get("/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
+router.get("/get/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
 
 module.exports = router;
