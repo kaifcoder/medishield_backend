@@ -47,7 +47,8 @@ const updateChildrenCategory = asyncHandler(async (req, res) => {
         }
       }
     };
-    const updatedCategory = await Category.updateOne(query, update);
+    const updatedCategory = await Category.updateOne(query, update).exec();
+
     res.json(updatedCategory);
   } catch (error) {
     throw new Error(error);
