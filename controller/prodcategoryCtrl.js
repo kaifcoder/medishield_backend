@@ -42,7 +42,7 @@ const updateChildrenCategory = asyncHandler(async (req, res) => {
     // Construct the update operation to push the new document into the subcategory's array
     const update = {
       $push: {
-        "children": {
+        "children.$.children": {
           name: req.body.name,
         }
       }
