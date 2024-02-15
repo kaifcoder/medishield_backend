@@ -246,4 +246,5 @@ module.exports = {
   rating,
   deleteAllProduct,
   getAllBannerProducts,
+  getAllProductsAdmin
 };
