@@ -885,8 +885,16 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         trackingNumber: trackingnumber,
       },
       { new: true }
-    );
+    ).populate("orderby").exec();
+
+    sendResendEmail(
+      to = updateOrderStatus.orderby.email,
+      subject = "Order Status Updated",
+      html = `Hi, Your order with order id ${updateOrderStatus._id} status has been updated to ${status} and tracking number is ${trackingnumber}`
+    )
+
     res.json(updateOrderStatus);
+
   } catch (error) {
     throw new Error(error);
   }
