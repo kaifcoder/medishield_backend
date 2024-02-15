@@ -22,7 +22,6 @@ const secondLevelSchema = new mongoose.Schema({
 
 // Define the main schema for the entire structure
 const mainSchema = new mongoose.Schema({
-    _id: { type: mongoose.Schema.Types.ObjectId },
     id: Number,
     name: String,
     url_path: String,
