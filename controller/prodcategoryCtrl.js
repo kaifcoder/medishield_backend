@@ -29,6 +29,25 @@ const updateCategory = asyncHandler(async (req, res) => {
   }
 });
 
+const updateChildrenCategory = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { parentId } = req.body;
+  validateMongoDbId(id);
+  try {
+    const updatedCategory = await Category.findByIdAndUpdate(id, {
+      $where: { _id: parentId },
+      $push: {
+        children: req.body
+      }
+    }, {
+      new: true,
+    });
+    res.json(updatedCategory);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 
 const deleteCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -87,4 +106,5 @@ module.exports = {
   getCategory,
   getallCategory,
   getFeaturedCategory,
+  updateChildrenCategory
 };
