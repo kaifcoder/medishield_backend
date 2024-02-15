@@ -16,7 +16,11 @@ const updateCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
   try {
-    const updatedCategory = await Category.findByIdAndUpdate(id, req.body, {
+    const updatedCategory = await Category.findByIdAndUpdate(id, {
+      $push: {
+        children: req.body
+      }
+    }, {
       new: true,
     });
     res.json(updatedCategory);
