@@ -35,12 +35,12 @@ const updateChildrenCategory = asyncHandler(async (req, res) => {
   validateMongoDbId(id);
   try {
     const updatedCategory = await Category.findByIdAndUpdate(id, {
-      $where: { _id: parentId },
       $push: {
         children: req.body
       }
     }, {
       new: true,
+      arrayFilters: [{ "children._id": parentId }],
     });
     res.json(updatedCategory);
   } catch (error) {
