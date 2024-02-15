@@ -12,11 +12,6 @@ var brandSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    category_id: {
-      type: Number,
-      required: true,
-      unique: true,
-    },
     logo: {
       type: String,
       required: true,

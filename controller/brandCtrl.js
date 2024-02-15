@@ -4,7 +4,12 @@ const validateMongoDbId = require("../utils/validateMongodbId");
 
 const createBrand = asyncHandler(async (req, res) => {
   try {
-    const newBrand = await Brand.create(req.body);
+    const newBrand = await Brand.create({
+      name: req.body.name,
+      brand_id: req.body.brand_id,
+      logo: req.body.logo,
+    });
+
     res.json(newBrand);
   } catch (error) {
     throw new Error(error);
