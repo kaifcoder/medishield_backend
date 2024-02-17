@@ -10,6 +10,7 @@ const {
   deleteAllProduct,
   getAllBannerProducts,
   getAllProductsAdmin,
+  getaProductwithSku,
 } = require("../controller/productCtrl");
 const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -27,5 +28,6 @@ router.delete("/:id", authMiddleware, isAdmin, deleteProduct);
 
 router.get("/", getAllProduct);
 router.get("/get/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
+router.get("/getproduct/:sku", authMiddleware, isAdmin, getaProductwithSku);
 
 module.exports = router;

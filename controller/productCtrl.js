@@ -54,6 +54,16 @@ const getaProduct = asyncHandler(async (req, res) => {
   }
 });
 
+const getaProductwithSku = asyncHandler(async (req, res) => {
+  const { sku } = req.params;
+  try {
+    const findProduct = await Product.findOne({ sku: sku });
+    res.json({ findProduct });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 const deleteAllProduct = asyncHandler(async (req, res) => {
   try {
     const category = req.body.category;
@@ -138,8 +148,16 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
 const getAllProductsAdmin = asyncHandler(async (req, res) => {
   try {
-    const product = await Product.find();
-    res.json({ data: product });
+    const {
+      page
+    } = req.query;
+    const skip = (page - 1) * 50;
+    const productCount = await Product.countDocuments();
+    if (page || page < 1) {
+      if (page > productCount) throw new Error("This Page does not exists");
+    }
+    const product = await Product.find().skip(skip).limit(50);
+    res.json({ data: product, count: productCount });
   } catch (error) {
     throw new Error(error);
   }
@@ -246,5 +264,6 @@ module.exports = {
   rating,
   deleteAllProduct,
   getAllBannerProducts,
-  getAllProductsAdmin
+  getAllProductsAdmin,
+  getaProductwithSku
 };
