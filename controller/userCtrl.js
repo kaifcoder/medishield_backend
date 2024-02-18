@@ -808,6 +808,16 @@ const createOrder = asyncHandler(async (req, res) => {
       shippingAddress: shippingAddress,
     }).save();
     console.log(newOrder);
+    //update stock in product
+    // let bulkOption = userCart.products.map((item) => {
+    //   return {
+    //     updateOne: {
+    //       filter: { _id: item.product },
+    //       update: { $inc: { max_sale_qty: -item.count } },
+    //     },
+    //   };
+    // });
+
     // send emails to user
     sendResendEmail(
       to = user.email,
