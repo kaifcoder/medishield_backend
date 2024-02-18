@@ -10,6 +10,11 @@ const createProduct = asyncHandler(async (req, res) => {
     if (req.body.title) {
       req.body.slug = slugify(req.body.title);
     }
+    const { sku } = req.body;
+    const existingProduct = await Product.findOne({ sku: sku });
+    if (existingProduct) {
+      throw new Error("Product with this SKU already exists");
+    }
     const newProduct = await Product.create(req.body);
     res.json(newProduct);
   } catch (error) {
