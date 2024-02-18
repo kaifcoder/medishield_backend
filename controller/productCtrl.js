@@ -105,7 +105,6 @@ const getAllProduct = asyncHandler(async (req, res) => {
     if (req.query.search) {
       queryStr = JSON.stringify({
         ...queryObj, "$or": [{ name: { $regex: req.query.search, $options: "i" } }, { short_description: { $regex: req.query.search, $options: "i" } },
-        { "product_specs.description": { $regex: req.query.search, $options: "i" } },
         ]
       });
     }
