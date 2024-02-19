@@ -7,9 +7,6 @@ const Banner = require("../models/bannerModel");
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
-    if (req.body.title) {
-      req.body.slug = slugify(req.body.title);
-    }
     const { sku } = req.body;
     const existingProduct = await Product.findOne({ sku: sku });
     if (existingProduct) {
@@ -23,13 +20,11 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-  const id = req.params;
-  validateMongoDbId(id);
+  const { id } = req.params;
+  console.log(req.body);
+  console.log(id);
   try {
-    if (req.body.title) {
-      req.body.slug = slugify(req.body.title);
-    }
-    const updateProduct = await Product.findOneAndUpdate({ id }, req.body, {
+    const updateProduct = await Product.findOneAndUpdate({ sku: id }, req.body, {
       new: true,
     });
     res.json(updateProduct);
@@ -119,7 +114,9 @@ const getAllProduct = asyncHandler(async (req, res) => {
     // if search is present then filter by search
     if (req.query.search) {
       queryStr = JSON.stringify({
-        ...queryObj, "$or": [{ name: { $regex: req.query.search, $options: "i" } }, { short_description: { $regex: req.query.search, $options: "i" } },
+        ...queryObj, "$or": [{ name: { $regex: req.query.search, $options: "i" } },
+        { manufacturer: { $regex: req.query.search, $options: "i" } },
+        { short_description: { $regex: req.query.search, $options: "i" } },
         ]
       });
     }
