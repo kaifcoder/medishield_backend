@@ -66,6 +66,14 @@ const productSchema = new mongoose.Schema({
     price: {},
     media_gallery_entries: [mediaEntrySchema],
     categories: [String]
+  }],
+  reviews: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId, ref: 'User'
+    },
+    userName: String,
+    detail: String,
+    rating: Number,
   }]
 });
 

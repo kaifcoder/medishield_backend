@@ -216,18 +216,19 @@ const addToWishlist = asyncHandler(async (req, res) => {
 const rating = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const { star, prodId, comment } = req.body;
+  const name = req.user.firstname + " " + req.user.lastname;
   try {
     const product = await Product.findById(prodId);
-    let alreadyRated = product.ratings.find(
-      (userId) => userId.postedby.toString() === _id.toString()
+    let alreadyRated = product.reviews.find(
+      (review) => review.user.toString() === _id.toString()
     );
     if (alreadyRated) {
       const updateRating = await Product.updateOne(
         {
-          ratings: { $elemMatch: alreadyRated },
+          reviews: { $elemMatch: alreadyRated },
         },
         {
-          $set: { "ratings.$.star": star, "ratings.$.comment": comment },
+          $set: { "reviews.$.rating": star, "reviews.$.detail": comment },
         },
         {
           new: true,
@@ -238,10 +239,11 @@ const rating = asyncHandler(async (req, res) => {
         prodId,
         {
           $push: {
-            ratings: {
-              star: star,
-              comment: comment,
-              postedby: _id,
+            reviews: {
+              user: _id,
+              userName: name,
+              detail: comment,
+              rating: star,
             },
           },
         },
@@ -251,21 +253,10 @@ const rating = asyncHandler(async (req, res) => {
       );
     }
     const getallratings = await Product.findById(prodId);
-    let totalRating = getallratings.ratings.length;
-    let ratingsum = getallratings.ratings
-      .map((item) => item.star)
-      .reduce((prev, curr) => prev + curr, 0);
-    let actualRating = Math.round(ratingsum / totalRating);
-    let finalproduct = await Product.findByIdAndUpdate(
-      prodId,
-      {
-        totalrating: actualRating,
-      },
-      { new: true }
-    );
-    res.json(finalproduct);
+
+    res.json(getallratings);
   } catch (error) {
-    throw new Error(error);
+    throw new Error('error' + error.toString());
   }
 });
 

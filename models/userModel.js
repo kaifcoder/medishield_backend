@@ -47,6 +47,10 @@ var userSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
+    medishieldcoins: {
+      type: Number,
+      default: 0,
+    },
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
