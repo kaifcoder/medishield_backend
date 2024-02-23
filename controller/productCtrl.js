@@ -101,6 +101,8 @@ const getAllBannerProducts = asyncHandler(async (req, res) => {
   }
 });
 
+
+
 const getAllProduct = asyncHandler(async (req, res) => {
   try {
     // Filtering

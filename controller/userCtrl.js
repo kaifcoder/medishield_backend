@@ -798,19 +798,13 @@ const emptyCart = asyncHandler(async (req, res) => {
 
 // post checkout order creation
 const createOrder = asyncHandler(async (req, res) => {
-  const { paymentId, amount, shipping, shippingAddress } = req.body;
+  const { paymentId, amount, shipping, shippingAddress, msc } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
     const user = await User.findById(_id);
     let userCart = await Cart.findOne({ orderby: user._id });
     console.log(userCart);
-    // let finalAmout = 0;
-    // if (couponApplied && userCart.totalAfterDiscount) {
-    //   finalAmout = userCart.totalAfterDiscount;
-    // } else {
-    //   finalAmout = userCart.cartTotal;
-    // }
 
     let newOrder = await new Order({
       products: userCart.products,
@@ -818,6 +812,7 @@ const createOrder = asyncHandler(async (req, res) => {
         id: paymentId,
         amount: amount,
         shipping: shipping,
+        msc: msc,
         created: Date.now(),
         currency: "INR",
       },
@@ -825,6 +820,10 @@ const createOrder = asyncHandler(async (req, res) => {
       orderStatus: "Processing",
       shippingAddress: shippingAddress,
     }).save();
+
+    //update user's medishield coins
+    user.medishieldcoins = user.medishieldcoins - msc * 10;
+    await user.save();
 
     //update stock in product
     let bulkOption = userCart.products.map((item) => {
@@ -881,6 +880,54 @@ const getAllOrders = asyncHandler(async (req, res) => {
       .populate("orderby")
       .exec();
     res.json(alluserorders);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+
+const getMostBoughtProducts = asyncHandler(async (req, res) => {
+  try {
+    const pipeline = [
+      {
+        $unwind: '$products'
+      },
+      {
+        $group: {
+          _id: '$products.product',
+          totalQuantity: { $sum: '$products.count' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'products', // Assuming your products collection name is 'products'
+          localField: '_id',
+          foreignField: '_id',
+          as: 'productInfo'
+        }
+      },
+      {
+        $unwind: '$productInfo'
+      },
+      {
+        $replaceRoot: { newRoot: '$productInfo' } // Replace the root document with the productInfo
+      },
+      {
+        $addFields: { totalQuantity: '$totalQuantity' } // Add the total quantity field
+      },
+      {
+        $project: { _id: 0 } // Exclude _id field if needed
+      },
+      {
+        $sort: { totalQuantity: -1 }
+      },
+      {
+        $limit: 10 // You can adjust this limit based on how many top products you want to fetch
+      }
+    ];
+
+    const result = await Order.aggregate(pipeline);
+    res.json(result);
   } catch (error) {
     throw new Error(error);
   }
@@ -977,4 +1024,5 @@ module.exports = {
   deleteAddress,
   updateAddress,
   getSingleOrder,
+  getMostBoughtProducts,
 };
