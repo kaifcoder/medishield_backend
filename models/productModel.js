@@ -30,7 +30,7 @@ const productSchema = new mongoose.Schema({
   sku: String,
   thumbnail_url: String,
   short_description: String,
-  MediShieldCoin: Number,
+  medishield_coins: Number,
   manufacturer: String,
   average_rating: String,
   rating_count: String,

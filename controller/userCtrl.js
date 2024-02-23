@@ -17,23 +17,22 @@ const BASE_URL = process.env.BASE_URL;
 
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
-  const referralCode = req.body.referralCode;
 
   const findUser = await User.findOne({ email: email });
   if (!findUser) {
     const newUser = await User.create(req.body);
     // give user 100 coins for signup
     const user = await User.findById(newUser._id);
-    user.medishieldcoins = 100;
-    await user.save();
+    user.medishieldcoins = 50;
     // generate referral code
     const referralCode = user._id.toString().slice(0, 9);
-    newUser.referralCode = referralCode;
-    await newUser.save();
+    user.referralCode = referralCode;
+    await user.save();
     // give referrer 100 coins for referring
-    if (referralCode) {
+    let referer = req.body.referralCode;
+    if (referer) {
       const referrer = await User
-        .findOne({ referralCode: referralCode });
+        .findOne({ referralCode: referer });
       if (referrer) {
         referrer.medishieldcoins = referrer.medishieldcoins + 100;
         await referrer.save();
@@ -77,7 +76,7 @@ const sendVerificationEmail = asyncHandler(async (req, res) => {
     await sendResendEmail(
       to = user.email,
       subject = "Email Verification",
-      html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='${BASE_URL}/api/user/verifyEmail/${emailtoken}'>Click Here</>`
+      html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='${BASE_URL}api/user/verifyEmail/${emailtoken}'>Click Here</>`
     )
     res.json({
       message: "Email Sent"
