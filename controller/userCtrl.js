@@ -3,7 +3,6 @@ const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
 const Address = require("../models/addressModal");
 const Order = require("../models/orderModel");
-
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongoDbId = require("../utils/validateMongodbId");
@@ -11,8 +10,8 @@ const { generateRefreshToken } = require("../config/refreshtoken");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { sendResendEmail } = require("../utils/sendResendEmail");
-
 require("dotenv").config();
+
 const BASE_URL = process.env.BASE_URL;
 
 const createUser = asyncHandler(async (req, res) => {
@@ -914,9 +913,6 @@ const getMostBoughtProducts = asyncHandler(async (req, res) => {
       },
       {
         $addFields: { totalQuantity: '$totalQuantity' } // Add the total quantity field
-      },
-      {
-        $project: { _id: 0 } // Exclude _id field if needed
       },
       {
         $sort: { totalQuantity: -1 }
