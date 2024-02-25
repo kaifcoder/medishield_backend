@@ -797,7 +797,7 @@ const emptyCart = asyncHandler(async (req, res) => {
 
 // post checkout order creation
 const createOrder = asyncHandler(async (req, res) => {
-  const { paymentId, amount, shipping, shippingAddress, msc } = req.body;
+  const { paymentId, amount, shipping, shippingAddress, msc, prod_msc } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
@@ -824,6 +824,10 @@ const createOrder = asyncHandler(async (req, res) => {
     user.medishieldcoins = user.medishieldcoins - msc * 10;
     await user.save();
 
+    // give user reward points based on product medishield coins
+    user.medishieldcoins = user.medishieldcoins + prod_msc;
+    await user.save();
+
     //update stock in product
     let bulkOption = userCart.products.map((item) => {
       return {
@@ -837,7 +841,7 @@ const createOrder = asyncHandler(async (req, res) => {
     // send emails to user
     sendResendEmail(
       to = user.email,
-      subject = "Order Placed",
+      subject = `Order Placed ${newOrder._id}`,
       html = `Hi, Your order has been placed successfully. Your order id is ${newOrder._id}`
     );
     sendResendEmail(
@@ -960,8 +964,51 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
     sendResendEmail(
       to = updateOrderStatus.orderby.email,
-      subject = "Order Status Updated",
-      html = `Hi, Your order with order id ${updateOrderStatus._id} status has been updated to ${status} and tracking number is ${trackingnumber}`
+      subject = `Order Status Updated ${updateOrderStatus._id}`,
+      html = `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Order Update Notification</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  margin: 0;
+                  padding: 0;
+                  background-color: #f5f5f5;
+              }
+              .container {
+                  max-width: 600px;
+                  margin: 20px auto;
+                  padding: 20px;
+                  background-color: #fff;
+                  border-radius: 5px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+              }
+              h1 {
+                  color: #333;
+              }
+              p {
+                  margin-bottom: 20px;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>Order Update Notification</h1>
+              <p>Dear Customer,</p>
+              <p>We are pleased to inform you that your order with Order ID: <strong>${updateOrderStatus._id}</strong> has been updated.</p>
+              <p><strong>Order Status:</strong> ${status}</p>
+              <p><strong>Tracking Number:</strong> ${trackingnumber}</p>
+              <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
+              <p>Warm regards,</p>
+              <p><em>MediShield Healthcare PVT. LTD.</em></p>
+          </div>
+      </body>
+      </html>
+      `
     )
 
     res.json(updateOrderStatus);
