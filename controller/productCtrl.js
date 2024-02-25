@@ -101,7 +101,45 @@ const getAllBannerProducts = asyncHandler(async (req, res) => {
   }
 });
 
-
+const contextualSearch = asyncHandler(async (req, res) => {
+  try {
+    const search = req.query.search;
+    const pipeline = [
+      {
+        $search: {
+          index: "products",
+          text: {
+            query: search,
+            path: {
+              wildcard: "*",
+            },
+          },
+        },
+      },
+      {
+        $limit: 3
+      },
+      {
+        $project: {
+          _id: 0,
+          name: 1,
+          sku: 1,
+          product_specs: {
+            description: 1,
+          },
+          price: {
+            minimalPrice: 1,
+            regularPrice: 1,
+          },
+        },
+      }
+    ]
+    const products = await Product.aggregate(pipeline);
+    res.json({ data: products });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
 
 const getAllProduct = asyncHandler(async (req, res) => {
   try {
@@ -273,5 +311,6 @@ module.exports = {
   deleteAllProduct,
   getAllBannerProducts,
   getAllProductsAdmin,
-  getaProductwithSku
+  getaProductwithSku,
+  contextualSearch
 };
