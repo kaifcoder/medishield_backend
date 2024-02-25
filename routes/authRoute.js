@@ -34,6 +34,7 @@ const {
   updateAddress,
   getSingleOrder,
   getMostBoughtProducts,
+  createRazorpayOrder,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -87,6 +88,8 @@ router.put("/update-address/:id", authMiddleware, updateAddress);
 router.delete("/empty-cart", authMiddleware, emptyCart);
 router.delete("/:id", deleteaUser);
 router.delete("/address/:id", authMiddleware, deleteAddress);
+
+router.post("/create-razorpay-order", authMiddleware, createRazorpayOrder);
 
 
 

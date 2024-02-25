@@ -794,21 +794,55 @@ const emptyCart = asyncHandler(async (req, res) => {
   }
 });
 
+const createRazorpayOrder = asyncHandler(async (req, res) => {
+  const Razorpay = require('razorpay');
+  var instance = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
 
+  var options = {
+    amount: Number(req.body.amount * 100),
+    currency: req.body.currency,
+  };
+  instance.orders.create(options, function (err, order) {
+    console.log(order);
+    res.json(order);
+  });
+});
+
+function verifyPaymentSignature(order_id, razorpay_payment_id, razorpay_signature) {
+  const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+  const data = `${order_id}|${razorpay_payment_id}`;
+  const generated_signature = hmac.update(data).digest('hex');
+
+  if (generated_signature === razorpay_signature) {
+    console.log("Payment is successful");
+    return true;
+  } else {
+    console.log("Invalid signature. Payment failed.");
+    return false;
+  }
+}
 // post checkout order creation
 const createOrder = asyncHandler(async (req, res) => {
-  const { paymentId, amount, shipping, shippingAddress, msc, prod_msc } = req.body;
+  const { paymentId, amount, shipping, shippingAddress, msc, orderId, paymentSignature } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
+    // verify signatures here
+    const isAuthentic = verifyPaymentSignature(orderId, paymentId, paymentSignature);
+    if (!isAuthentic) {
+      throw new Error("Payment Signature is not authentic invalid payment");
+    }
+
+
     const user = await User.findById(_id);
     let userCart = await Cart.findOne({ orderby: user._id });
-    console.log(userCart);
+
 
     let newOrder = await new Order({
       products: userCart.products,
       paymentIntent: {
         id: paymentId,
+        rzporderId: orderId,
         amount: amount,
         shipping: shipping,
         msc: msc,
@@ -824,9 +858,9 @@ const createOrder = asyncHandler(async (req, res) => {
     user.medishieldcoins = user.medishieldcoins - msc * 10;
     await user.save();
 
-    // give user reward points based on product medishield coins
-    user.medishieldcoins = user.medishieldcoins + prod_msc;
-    await user.save();
+
+    // user.medishieldcoins = user.medishieldcoins + prod_msc;
+    // await user.save();
 
     //update stock in product
     let bulkOption = userCart.products.map((item) => {
@@ -842,14 +876,129 @@ const createOrder = asyncHandler(async (req, res) => {
     sendResendEmail(
       to = user.email,
       subject = `Order Placed ${newOrder._id}`,
-      html = `Hi, Your order has been placed successfully. Your order id is ${newOrder._id}`
+      html = `<!DOCTYPE html>
+      <html lang="en">
+      
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Order Confirmation</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 0;
+                  padding: 0;
+                  background-color: #f4f4f4;
+              }
+      
+              .container {
+                  max-width: 600px;
+                  margin: 20px auto;
+                  padding: 20px;
+                  background-color: #ffffff;
+                  border-radius: 8px;
+                  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+              }
+      
+              h1 {
+                  color: #333333;
+              }
+      
+              p {
+                  color: #666666;
+              }
+      
+              .order-id {
+                  font-weight: bold;
+                  color: #007bff;
+              }
+          </style>
+      </head>
+      
+      <body>
+          <div class="container">
+              <h1>Your Order Confirmation</h1>
+              <p>Hi,</p>
+              <p>Your order has been placed successfully.</p>
+              <p>Your order ID is: <span class="order-id">${newOrder._id}</span></p>
+              <p>Thank you for shopping with us!</p>
+          </div>
+      </body>
+      
+      </html>
+      `
     );
     sendResendEmail(
       to = "tipsntricks395@gmail.com",
       subject = `New Order Arrived ${newOrder._id}`,
-      html = `Hi admin, A new order has been placed with order id ${newOrder._id} and amount ${amount} INR
-      by ${shippingAddress.name} with email ${user.email} and mobile ${shippingAddress.mobile}
-            ship to ${shippingAddress.address} ${shippingAddress.city} ${shippingAddress.state} ${shippingAddress.country} ${shippingAddress.pincode}`
+      html = `<!DOCTYPE html>
+      <html lang="en">
+      
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>New Order Notification</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 0;
+                  padding: 0;
+                  background-color: #f4f4f4;
+              }
+      
+              .container {
+                  max-width: 600px;
+                  margin: 20px auto;
+                  padding: 20px;
+                  background-color: #ffffff;
+                  border-radius: 8px;
+                  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+              }
+      
+              h1 {
+                  color: #333333;
+              }
+      
+              p {
+                  color: #666666;
+              }
+      
+              .order-details {
+                  margin-top: 20px;
+                  padding: 10px;
+                  background-color: #f9f9f9;
+                  border-radius: 8px;
+              }
+      
+              .order-id,
+              .amount {
+                  font-weight: bold;
+                  color: #007bff;
+              }
+          </style>
+      </head>
+      
+      <body>
+          <div class="container">
+              <h1>New Order Notification</h1>
+              <p>Hi admin,</p>
+              <p>A new order has been placed with the following details:</p>
+      
+              <div class="order-details">
+                  <p><span class="label">Order ID:</span> <span class="order-id">${newOrder._id}</span></p>
+                  <p><span class="label">Amount:</span> <span class="amount">${amount} INR</span></p>
+                  <p><span class="label">Customer Name:</span> ${shippingAddress.name}</p>
+                  <p><span class="label">Email:</span> ${user.email}</p>
+                  <p><span class="label">Mobile:</span> ${shippingAddress.mobile}</p>
+                  <p><span class="label">Shipping Address:</span> ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
+              </div>
+      
+              <p>please check the admin dashboard for more details</p>
+          </div>
+      </body>
+      
+      </html>
+      `
     );
     // send emails to admin
     res.json({ message: "success" });
@@ -1068,4 +1217,5 @@ module.exports = {
   updateAddress,
   getSingleOrder,
   getMostBoughtProducts,
+  createRazorpayOrder
 };

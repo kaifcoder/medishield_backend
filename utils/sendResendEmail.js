@@ -19,7 +19,6 @@ async function sendResendEmail(
         return console.error({ error });
     }
 
-    console.log({ data });
     return data;
 };
 
