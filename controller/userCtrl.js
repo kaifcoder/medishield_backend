@@ -75,7 +75,100 @@ const sendVerificationEmail = asyncHandler(async (req, res) => {
     await sendResendEmail(
       to = user.email,
       subject = "Email Verification",
-      html = `Hi, Please follow this link to verify your email address. This link is valid till 10 minutes from now. <a href='${BASE_URL}api/user/verifyEmail/${emailtoken}'>Click Here</>`
+      html = `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Email Verification</title>
+          <style>
+              /* Reset styles */
+              body, table, td, a {
+                  -webkit-text-size-adjust: 100%;
+                  -ms-text-size-adjust: 100%;
+              }
+      
+              table, td {
+                  mso-table-lspace: 0pt;
+                  mso-table-rspace: 0pt;
+              }
+      
+              img {
+                  -ms-interpolation-mode: bicubic;
+              }
+      
+              /* Template styles */
+              body {
+                  margin: 0;
+                  padding: 0;
+                  font-family: Arial, sans-serif;
+                  background-color: #f4f4f4;
+              }
+      
+              table {
+                  width: 100%;
+                  background-color: #ffffff;
+              }
+      
+              td {
+                  padding: 20px;
+              }
+      
+              .header {
+                  background-color: #333333;
+                  color: #ffffff;
+                  text-align: center;
+              }
+      
+              .content {
+                  padding-top: 30px;
+                  padding-bottom: 30px;
+                  text-align: center;
+              }
+      
+              .footer {
+                  background-color: #333333;
+                  color: #ffffff;
+                  text-align: center;
+              }
+      
+              @media only screen and (max-width: 600px) {
+                  /* Adjust table sizes for mobile */
+                  table {
+                      width: 100%;
+                  }
+      
+                  .content {
+                      padding-left: 10px;
+                      padding-right: 10px;
+                  }
+              }
+          </style>
+      </head>
+      <body>
+          <table>
+              <tr>
+                  <td class="header">
+                      <h1>Email Verification</h1>
+                  </td>
+              </tr>
+              <tr>
+                  <td class="content">
+                      <p>Hi,</p>
+                      <p>Please follow this link to verify your email address. This link is valid for the next 10 minutes:</p>
+                      <p><a href="${BASE_URL}/api/user/verifyEmail/${emailtoken}">Click Here</a></p>
+                  </td>
+              </tr>
+              <tr>
+                  <td class="footer">
+                      <p>Thank you!</p>
+                      <p>MediShield Healthcare PVT. LTD.</p>
+                  </td>
+              </tr>
+          </table>
+      </body>
+      </html>
+      `
     )
     res.json({
       message: "Email Sent"
@@ -96,7 +189,52 @@ const verifyEmail = asyncHandler(async (req, res) => {
       res.send("Email verification failed, possibly the link is invalid or expired");
     }
     else {
-      res.send("Email verifified successfully");
+      // Rendering a beautiful card in HTML
+      const htmlResponse = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Email Verification</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f4f4f4;
+              margin: 0;
+              padding: 0;
+            }
+
+            .card {
+              background-color: #ffffff;
+              border-radius: 10px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              padding: 20px;
+              margin: 20px auto;
+              max-width: 400px;
+              text-align: center;
+            }
+
+            h1 {
+              color: #333333;
+            }
+
+            p {
+              color: #555555;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h1>Email Verified Successfully</h1>
+            <p>Your email has been successfully verified.</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Sending the HTML response
+      res.send(htmlResponse);
       User.updateOne({ email: decoded.data }, { isEmailVerified: true }, function (err, result) {
         if (err) {
           console.log(err);
