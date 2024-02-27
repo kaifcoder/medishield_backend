@@ -9,7 +9,7 @@ async function sendResendEmail(
     html
 ) {
     const { data, error } = await resend.emails.send({
-        from: 'MediShield-No-reply <medishield@darkinc.tech>',
+        from: 'MediShield-No-reply <medishield-NoReply@darkinc.tech>',
         to: [to],
         subject: subject,
         html: html,
@@ -21,5 +21,4 @@ async function sendResendEmail(
 
     return data;
 };
-
 module.exports = { sendResendEmail }

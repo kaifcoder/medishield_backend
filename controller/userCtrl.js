@@ -998,12 +998,18 @@ const createOrder = asyncHandler(async (req, res) => {
 
     // credit medishield coins to user
     let prod_msc = 0;
-    userCart.populate("products.product", (err, cart) => {
-      cart.products.forEach((item) => {
-        if (item.product.medishield_coins) prod_msc += item.product.medishield_coins * item.count;
-        else prod_msc += 0;
-      });
+    const promises = userCart.products.map(async (item) => {
+      const product = await Product.findById(item.product);
+      if (!product.medishield_coins) {
+        console.log("No medishield coins for this product");
+      }
+      else {
+        prod_msc += product.medishield_coins * item.count;
+        console.log("inner product_msc" + prod_msc);
+      }
     });
+    await Promise.all(promises);
+    console.log("Outer product_msc" + prod_msc);
     user.medishieldcoins = user.medishieldcoins + prod_msc;
     newuser = await user.save();
     console.log(newuser);
