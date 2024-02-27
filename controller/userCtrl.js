@@ -998,7 +998,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
 
     let prod_msc = 0;
-    await userCart.products.forEach(async (item) => {
+    userCart.products.forEach(async (item) => {
       let product = await Product
         .findById(item.product);
       if (product.medishield_coins) {
@@ -1009,7 +1009,7 @@ const createOrder = asyncHandler(async (req, res) => {
       }
     });
 
-    await user.medishieldcoins = user.medishieldcoins + prod_msc;
+    user.medishieldcoins = user.medishieldcoins + prod_msc;
     await user.save();
 
     //update stock in product
