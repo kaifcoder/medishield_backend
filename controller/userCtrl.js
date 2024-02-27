@@ -1000,11 +1000,13 @@ const createOrder = asyncHandler(async (req, res) => {
     let prod_msc = 0;
     userCart.populate("products.product", (err, cart) => {
       cart.products.forEach((item) => {
-        prod_msc += item.product.medishield_coins * item.count;
+        if (item.product.medishield_coins) prod_msc += item.product.medishield_coins * item.count;
+        else prod_msc += 0;
       });
     });
     user.medishieldcoins = user.medishieldcoins + prod_msc;
-    await user.save();
+    newuser = await user.save();
+    console.log(newuser);
 
 
     //update stock in product
