@@ -1005,7 +1005,7 @@ const createOrder = asyncHandler(async (req, res) => {
       let product = await Product
         .findById(item.product);
       if (product.medishield_coins) {
-        prod_msc = prod_msc + product.msc;
+        prod_msc = prod_msc + product.medishield_coins;
       }
       else {
         prod_msc = prod_msc + 0;
@@ -1079,7 +1079,6 @@ const createOrder = asyncHandler(async (req, res) => {
               <p>Shipping Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
               <p> Earned Medishield Coins: ${prod_msc}</p>
               <p>You will receive a confirmation email once your items have been shipped.</p>
-
               <p>Thank you for shopping with us!</p>
           </div>
       </body>
