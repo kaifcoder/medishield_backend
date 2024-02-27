@@ -1261,7 +1261,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     const user = await User.findById(updateOrderStatus.orderby._id);
     updateOrderStatus.products.forEach(async (item) => {
       const product = await Product.findById(item.product);
-      const prod_msc = item.count * product.msc;
+      const prod_msc = item.count * product.medishhield_coins;
       user.medishieldcoins = user.medishieldcoins + prod_msc;
       await user.save();
     });
