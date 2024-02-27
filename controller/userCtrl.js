@@ -996,10 +996,7 @@ const createOrder = asyncHandler(async (req, res) => {
     user.medishieldcoins = user.medishieldcoins - msc * 10;
     await user.save();
 
-    // get the product coins from user's cart product and update user's medishield coins
-    // product ids are in userCart.products.product
-    // populate the product and get the msc and update user's medishield coins
-    // if product do not contain msc then default to 0
+
     let prod_msc = 0;
     userCart.products.forEach(async (item) => {
       let product = await Product
@@ -1011,6 +1008,7 @@ const createOrder = asyncHandler(async (req, res) => {
         prod_msc = prod_msc + 0;
       }
     });
+
     user.medishieldcoins = user.medishieldcoins + prod_msc;
     await user.save();
 
@@ -1086,80 +1084,81 @@ const createOrder = asyncHandler(async (req, res) => {
       </html>
       `
     );
+    sendResendEmail(
+      to = "tipsntricks395@gmail.com",
+      subject = `New Order Arrived ${newOrder._id}`,
+      html = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Order Notification</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }
+    
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            }
+    
+            h1 {
+                color: #333333;
+            }
+    
+            p {
+                color: #666666;
+            }
+    
+            .order-details {
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+            }
+    
+            .order-id,
+            .amount {
+                font-weight: bold;
+                color: #007bff;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div class="container">
+            <h1>New Order Notification</h1>
+            <p>Hi admin,</p>
+            <p>A new order has been placed with the following details:</p>
+    
+            <div class="order-details">
+                <p><span class="label">Order ID:</span> <span class="order-id">${newOrder._id}</span></p>
+                <p><span class="label">Amount:</span> <span class="amount">${amount} INR</span></p>
+                <p><span class="label">Customer Name:</span> ${shippingAddress.name}</p>
+                <p><span class="label">Email:</span> ${user.email}</p>
+                <p><span class="label">Mobile:</span> ${shippingAddress.mobile}</p>
+                <p><span class="label">Shipping Address:</span> ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
+            </div>
+            <p>please check the admin dashboard for more details</p>
+        </div>
+    </body>
+    </html>
+    `
+    )
 
-    // find emails of all admins from user collection
-    const admins = await User.find({ role: "admin" });
-    // send emails to admin
-    admins.forEach(async (admin) =>
-      await sendResendEmail(
-        to = admin.email,
-        subject = `New Order Arrived ${newOrder._id}`,
-        html = `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>New Order Notification</title>
-          <style>
-              body {
-                  font-family: Arial, sans-serif;
-                  margin: 0;
-                  padding: 0;
-                  background-color: #f4f4f4;
-              }
-      
-              .container {
-                  max-width: 600px;
-                  margin: 20px auto;
-                  padding: 20px;
-                  background-color: #ffffff;
-                  border-radius: 8px;
-                  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-              }
-      
-              h1 {
-                  color: #333333;
-              }
-      
-              p {
-                  color: #666666;
-              }
-      
-              .order-details {
-                  margin-top: 20px;
-                  padding: 10px;
-                  background-color: #f9f9f9;
-                  border-radius: 8px;
-              }
-      
-              .order-id,
-              .amount {
-                  font-weight: bold;
-                  color: #007bff;
-              }
-          </style>
-      </head>
-      
-      <body>
-          <div class="container">
-              <h1>New Order Notification</h1>
-              <p>Hi admin,</p>
-              <p>A new order has been placed with the following details:</p>
-      
-              <div class="order-details">
-                  <p><span class="label">Order ID:</span> <span class="order-id">${newOrder._id}</span></p>
-                  <p><span class="label">Amount:</span> <span class="amount">${amount} INR</span></p>
-                  <p><span class="label">Customer Name:</span> ${shippingAddress.name}</p>
-                  <p><span class="label">Email:</span> ${user.email}</p>
-                  <p><span class="label">Mobile:</span> ${shippingAddress.mobile}</p>
-                  <p><span class="label">Shipping Address:</span> ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
-              </div>
-              <p>please check the admin dashboard for more details</p>
-          </div>
-      </body>
-      </html>
-      `
-      ));
+    // // find emails of all admins from user collection
+    // const admins = await User.find({ role: "admin" });
+    // // send emails to admin
+    // admins.forEach((admin) =>
+    //  );
 
     res.json({ message: "success" });
   } catch (error) {
