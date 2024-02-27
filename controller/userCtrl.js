@@ -1059,7 +1059,7 @@ const createOrder = asyncHandler(async (req, res) => {
               <p>Your order ID is: <span class="order-id">${newOrder._id}</span></p>
               <p>Amount: ${amount} INR</p>
               <p>Shipping Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
-              <p> Earned Medishield Coins: ${prod_msc}</p>
+              <p> Earned Medishield Coins: ${prod_msc} Will be credited after order is shipped </p>
               <p>You will receive a confirmation email once your items have been shipped.</p>
               <p>Thank you for shopping with us!</p>
           </div>
@@ -1068,8 +1068,13 @@ const createOrder = asyncHandler(async (req, res) => {
       </html>
       `
     );
-    sendResendEmail(
-      to = "tipsntricks395@gmail.com",
+
+
+    // find emails of all admins from user collection
+    const admins = await User.find({ role: "admin" });
+    // send emails to admin
+    admins.forEach((admin) => sendResendEmail(
+      to = admin.email,
       subject = `New Order Arrived ${newOrder._id}`,
       html = `<!DOCTYPE html>
     <html lang="en">
@@ -1137,12 +1142,7 @@ const createOrder = asyncHandler(async (req, res) => {
     </html>
     `
     )
-
-    // // find emails of all admins from user collection
-    // const admins = await User.find({ role: "admin" });
-    // // send emails to admin
-    // admins.forEach((admin) =>
-    //  );
+    );
 
     res.json({
       message: "success"
@@ -1256,6 +1256,15 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       },
       { new: true }
     ).populate("orderby").exec();
+
+    // credit product msc to user
+    const user = await User.findById(updateOrderStatus.orderby._id);
+    updateOrderStatus.products.forEach(async (item) => {
+      const product = await Product.findById(item.product);
+      const prod_msc = item.count * product.msc;
+      user.medishieldcoins = user.medishieldcoins + prod_msc;
+      await user.save();
+    });
 
     sendResendEmail(
       to = updateOrderStatus.orderby.email,
