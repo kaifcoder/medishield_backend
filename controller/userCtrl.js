@@ -1010,6 +1010,8 @@ const createOrder = asyncHandler(async (req, res) => {
       };
     });
     let updated = await Product.bulkWrite(bulkOption, { new: true });
+
+
     // send emails to user
     sendResendEmail(
       to = user.email,
@@ -1066,12 +1068,16 @@ const createOrder = asyncHandler(async (req, res) => {
       </html>
       `
     );
-    sendResendEmail(
-      to = "tipsntricks395@gmail.com",
-      subject = `New Order Arrived ${newOrder._id}`,
-      html = `<!DOCTYPE html>
+
+    // find emails of all admins from user collection
+    const admins = await User.find({ role: "admin" });
+    // send emails to admin
+    admins.forEach(async (admin) =>
+      await sendResendEmail(
+        to = "tipsntricks395@gmail.com",
+        subject = `New Order Arrived ${newOrder._id}`,
+        html = `<!DOCTYPE html>
       <html lang="en">
-      
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1130,15 +1136,13 @@ const createOrder = asyncHandler(async (req, res) => {
                   <p><span class="label">Mobile:</span> ${shippingAddress.mobile}</p>
                   <p><span class="label">Shipping Address:</span> ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
               </div>
-      
               <p>please check the admin dashboard for more details</p>
           </div>
       </body>
-      
       </html>
       `
-    );
-    // send emails to admin
+      ));
+
     res.json({ message: "success" });
   } catch (error) {
     throw new Error(error);
