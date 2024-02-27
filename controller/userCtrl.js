@@ -1074,7 +1074,7 @@ const createOrder = asyncHandler(async (req, res) => {
     // send emails to admin
     admins.forEach(async (admin) =>
       await sendResendEmail(
-        to = "tipsntricks395@gmail.com",
+        to = admin.email,
         subject = `New Order Arrived ${newOrder._id}`,
         html = `<!DOCTYPE html>
       <html lang="en">
