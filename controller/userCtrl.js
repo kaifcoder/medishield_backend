@@ -1078,7 +1078,7 @@ const createOrder = asyncHandler(async (req, res) => {
               <p>Your order ID is: <span class="order-id">${newOrder._id}</span></p>
               <p>Amount: ${amount} INR</p>
               <p>Shipping Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
-              <p> Earned Medishield Coins: ${prod_msc} Will be credited after order is shipped </p>
+              <p> Earned Medishield Coins: ${prod_msc}</p>
               <p>You will receive a confirmation email once your items have been shipped.</p>
               <p>Thank you for shopping with us!</p>
           </div>
