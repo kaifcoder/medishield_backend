@@ -1009,8 +1009,8 @@ const createOrder = asyncHandler(async (req, res) => {
       }
     });
 
-    user.medishieldcoins = user.medishieldcoins + prod_msc;
-    await user.save();
+    // update user's medishield coins
+    const updatedUser = await user.updateOne({ $inc: { medishieldcoins: prod_msc } }, { new: true });
 
     //update stock in product
     let bulkOption = userCart.products.map((item) => {
@@ -1160,7 +1160,10 @@ const createOrder = asyncHandler(async (req, res) => {
     // admins.forEach((admin) =>
     //  );
 
-    res.json({ message: "success" });
+    res.json({
+      message: "success"
+
+    });
   } catch (error) {
     throw new Error(error);
   }
