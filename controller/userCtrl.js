@@ -996,22 +996,6 @@ const createOrder = asyncHandler(async (req, res) => {
     user.medishieldcoins = user.medishieldcoins - msc * 10;
     await user.save();
 
-
-    let prod_msc = 0;
-    userCart.products.forEach(async (item) => {
-      let product = await Product
-        .findById(item.product);
-      if (product.medishield_coins) {
-        prod_msc = prod_msc + product.medishield_coins;
-      }
-      else {
-        prod_msc = prod_msc + 0;
-      }
-    });
-
-    // update user's medishield coins
-    const updatedUser = await user.updateOne({ $inc: { medishieldcoins: prod_msc } }, { new: true });
-
     //update stock in product
     let bulkOption = userCart.products.map((item) => {
       return {
