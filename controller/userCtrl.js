@@ -996,6 +996,17 @@ const createOrder = asyncHandler(async (req, res) => {
     user.medishieldcoins = user.medishieldcoins - msc * 10;
     await user.save();
 
+    // credit medishield coins to user
+    let prod_msc = 0;
+    userCart.populate("products.product", (err, cart) => {
+      cart.products.forEach((item) => {
+        prod_msc += item.product.medishield_coins * item.count;
+      });
+    });
+    user.medishieldcoins = user.medishieldcoins + prod_msc;
+    await user.save();
+
+
     //update stock in product
     let bulkOption = userCart.products.map((item) => {
       return {
@@ -1144,6 +1155,9 @@ const createOrder = asyncHandler(async (req, res) => {
     )
     );
 
+
+
+
     res.json({
       message: "success"
 
@@ -1256,15 +1270,6 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       },
       { new: true }
     ).populate("orderby").exec();
-
-    // credit product msc to user
-    const user = await User.findById(updateOrderStatus.orderby._id);
-    updateOrderStatus.products.forEach(async (item) => {
-      const product = await Product.findById(item.product);
-      const prod_msc = item.count * product.medishhield_coins;
-      user.medishieldcoins = user.medishieldcoins + prod_msc;
-      await user.save();
-    });
 
     sendResendEmail(
       to = updateOrderStatus.orderby.email,
