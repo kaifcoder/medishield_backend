@@ -35,6 +35,7 @@ const {
   getSingleOrder,
   getMostBoughtProducts,
   createRazorpayOrder,
+  cancelOrder,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -58,6 +59,7 @@ router.get('/reset-password/:token', resetPasswordForm);
 router.post("/reset-password/:token", resetPassword);
 router.put("/password", authMiddleware, updatePassword);
 
+router.put("/order/cancel-order/:id", authMiddleware, cancelOrder);
 router.put(
   "/order/update-order/:id",
   authMiddleware,
@@ -65,7 +67,6 @@ router.put(
   updateOrderStatus
 );
 
-router.put("/order/cancel-order/:id", authMiddleware, updateOrderStatus);
 
 router.get("/all-users", getallUser);
 router.get("/get-orders", authMiddleware, getOrders);

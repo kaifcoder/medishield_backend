@@ -1173,21 +1173,17 @@ const createOrder = asyncHandler(async (req, res) => {
 
 const cancelOrder = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
   validateMongoDbId(id);
-
-
   try {
     const order = await Order.findById(id);
+
     if (order.orderStatus === "Shipped") { throw new Error("Order already shipped, cannot be cancelled"); }
     else if (order.orderStatus === "Delivered") { throw new Error("Order already delivered, cannot be cancelled"); }
     else if (order.orderStatus === "Cancelled") { throw new Error("Order already cancelled"); }
     else {
-      // refund the money to user
+      // // refund the money to user
       const Razorpay = require('razorpay');
       var instance = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
-
-
       instance.payments.refund(order.paymentIntent.id, {
         speed: "optimum",
       }).then((data) => {
@@ -1196,11 +1192,13 @@ const cancelOrder = asyncHandler(async (req, res) => {
         console.log(error);
       });
 
-
-
       const user = await User.findById(order.orderby);
-      user.medishieldcoins = user.medishieldcoins + order.msc * 10;
-      await user.save();
+
+
+      if (order.paymentIntent.msc > 0) {
+        user.medishieldcoins = Number(user.medishieldcoins + (order.paymentIntent.msc * 10));
+        await user.save();
+      }
 
 
 
@@ -1225,11 +1223,11 @@ const cancelOrder = asyncHandler(async (req, res) => {
         }
         else {
           prod_msc += product.medishield_coins * item.count;
-          console.log("inner product_msc" + prod_msc);
+
         }
       });
       await Promise.all(promises);
-      console.log("Outer product_msc" + prod_msc);
+
       user.medishieldcoins = user.medishieldcoins - prod_msc;
       newuser = await user.save();
 
@@ -1286,11 +1284,12 @@ const cancelOrder = asyncHandler(async (req, res) => {
       <h1>Your Order Cancellation</h1>
       <p>Hi,</p>
       <p>This email confirms the cancellation of your order with ID: <span class="order-id">${id}</span>.</p>
+      <p>Refund will be initiated to your account within 7-10 business days.</p>
       <p>We understand that circumstances change, and we apologize for any inconvenience this may cause.</p>
-      <p>If you have any questions regarding your order cancellation, please don't hesitate to reply to this email or contact our customer service team at [insert customer service contact information].</p>
+      <p>If you have any questions regarding your order cancellation, please don't hesitate to reply to this email or contact our customer service team at <em>eximlko@gmail.com</em> or <em>medishieldhealthcare@gmail.com</em>.</p>
       <p>Thank you for your understanding.</p>
       <p>Sincerely,</p>
-      <p>[Your Company Name]</p>
+      <p><em>MediShield Healthcare PVT. LTD.</em></p>
     </div>
   </body>
   </html>
@@ -1299,10 +1298,11 @@ const cancelOrder = asyncHandler(async (req, res) => {
 
       res.json(updatedOrder);
     }
-    // give back medishield coins to user
+
 
   } catch (error) {
-    throw new Error(error);
+    console.log(error);
+    throw new Error("Order cancel error" + error);
   }
 });
 
