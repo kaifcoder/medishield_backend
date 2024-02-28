@@ -19,9 +19,11 @@ var orderSchema = new mongoose.Schema(
       type: String,
       default: "Processing",
       enum: [
+        "Not Processed", // Payment not received
         "Processing",
         "Shipped", // AWB number -> order update
         "Delivered",
+        "Cancelled",
       ],
     },
     orderby: {

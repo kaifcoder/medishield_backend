@@ -1163,12 +1163,8 @@ const createOrder = asyncHandler(async (req, res) => {
     )
     );
 
-
-
-
     res.json({
       message: "success"
-
     });
   } catch (error) {
     throw new Error(error);
