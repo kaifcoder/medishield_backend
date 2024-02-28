@@ -65,6 +65,8 @@ router.put(
   updateOrderStatus
 );
 
+router.put("/order/cancel-order/:id", authMiddleware, updateOrderStatus);
+
 router.get("/all-users", getallUser);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/getmostbought", authMiddleware, getMostBoughtProducts);
