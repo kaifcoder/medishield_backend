@@ -6,13 +6,15 @@ const resend = new Resend(process.env.RESEND_API);
 async function sendResendEmail(
     to,
     subject,
-    html
+    html,
+    attachments = []
 ) {
     const { data, error } = await resend.emails.send({
         from: 'MediShield-No-reply <medishield-NoReply@darkinc.tech>',
         to: [to],
         subject: subject,
         html: html,
+        attachments: attachments
     });
 
     if (error) {

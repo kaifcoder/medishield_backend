@@ -36,6 +36,7 @@ const {
   getMostBoughtProducts,
   createRazorpayOrder,
   cancelOrder,
+  getCSVforOrders,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -72,6 +73,7 @@ router.get("/all-users", getallUser);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/getmostbought", authMiddleware, getMostBoughtProducts);
 router.get("/getallorders", authMiddleware, isAdmin, getAllOrders);
+router.get("/getPendingOrderCSV", authMiddleware, isAdmin, getCSVforOrders);
 router.get("/getOrderDetails/:id", authMiddleware, isAdmin, getSingleOrder);
 router.get("/refresh", handleRefreshToken);
 router.get("/logout", logout);
