@@ -13,13 +13,60 @@ const { sendResendEmail } = require("../utils/sendResendEmail");
 require("dotenv").config();
 const fs = require('fs');
 const BASE_URL = process.env.BASE_URL;
+const { zohoBookApi } = require("../utils/zohoapi");
+const axios = require('axios');
+const zohoAuthData = {
+  client_id: process.env.ZOHO_CLIENT_ID,
+  client_secret: process.env.ZOHO_CLIENT_SECRET,
+  refresh_token: process.env.ZOHO_REFRESH_TOKEN,
+  grant_type: 'refresh_token'
+};
+
+const org = process.env.ZOHO_ORG_ID
+
+const zohoAuth = async () => {
+  const zohoAuthResponse = await axios.post(`
+    https://accounts.zoho.in/oauth/v2/token?refresh_token=${zohoAuthData.refresh_token}&client_id=${zohoAuthData.client_id}&client_secret=${zohoAuthData.client_secret}&grant_type=${zohoAuthData.grant_type}
+    ` );
+  console.log(zohoAuthResponse.data.access_token);
+  const accessToken = zohoAuthResponse.data.access_token;
+  return accessToken;
+}
 
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
 
   const findUser = await User.findOne({ email: email });
   if (!findUser) {
-    const newUser = await User.create(req.body);
+
+    const accessToken = await zohoAuth();
+    // create contact on zoho also
+    const customerPayload = {
+      contact_name: email,
+      contact_type: 'customer',
+      contact_subtype: 'individual',
+      contact_persons: [
+        {
+          first_name: req.body.firstname,
+          last_name: req.body.lastname,
+          email: email,
+          phone: req.body.mobile,
+        }
+      ],
+    };
+
+
+    const customer = await zohoBookApi.post(`/contacts?organization_id=${org}`, customerPayload,
+      {
+        headers: {
+          authorization: `Zoho-oauthtoken ${accessToken}`
+        }
+      }
+    );
+    const newUser = await User.create({
+      ...req.body,
+      zohoCustomerId: customer.data.contact.contact_id,
+    });
     // give user 100 coins for signup
     const user = await User.findById(newUser._id);
     user.medishieldcoins = 50;
@@ -788,77 +835,123 @@ const getWishlist = asyncHandler(async (req, res) => {
   }
 });
 
-
+// check stock availablity in zoho books
+const checkStock = async (barcode, requriedStock) => {
+  // get auth token from zoho books
+  const accessToken = await zohoAuth();
+  // get the barcode of the product using sku
+  const item = await zohoBookApi.get(`/items?organization_id=${org}&sku=${barcode}`,
+    {
+      headers: {
+        authorization: `Zoho-oauthtoken ${accessToken}`
+      }
+    }
+  );
+  console.log(item.data);
+  // get the product details using barcode
+  if (item.data.items.length > 0) {
+    const itemId = item.data.items[0].item_id;
+    const inStock = item.data.items[0].available_stock;
+    if (inStock >= requriedStock) {
+      console.log('Item is in stock');
+      console.log('Item ID:', itemId);
+      return {
+        inStock,
+        itemId
+      };
+    }
+    else {
+      console.log('Item is out of stock');
+      return false;
+    }
+  }
+  else {
+    console.log('Item not found');
+    return false;
+  }
+}
 // user cart
 const userCart = asyncHandler(async (req, res) => {
   const { product } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
-    const user = await User.findById(_id);
-    const alreadyExistCart = await Cart.findOne({ orderby: user._id });
-    if (alreadyExistCart) {
-      const productExist = alreadyExistCart.products.find(
-        (p) => p.variant == product.variant
-      );
-
-      if (productExist) {
-        console.log("product exist")
-        console.log(productExist);
-        console.log(product.price * product.count);
-        console.log(alreadyExistCart.cartTotal + product.price * product.count)
-        const updatedCart = await Cart.findOneAndUpdate(
-          {
-            orderby: user._id,
-            "products.variant": product.variant,
-          },
-          {
-            $inc: {
-              "products.$.count": product.count,
-              cartTotal: product.price * product.count
-            },
-          },
-          { new: true }
+    let { inStock, itemId } = await checkStock(product.variant, product.count);
+    console.log(inStock);
+    console.log(itemId);
+    if (!inStock) {
+      // update stock in product
+      throw new Error("Product is out of stock or available quantity is less than required quantity");
+    } else {
+      const user = await User.findById(_id);
+      const alreadyExistCart = await Cart.findOne({ orderby: user._id });
+      if (alreadyExistCart) {
+        const productExist = alreadyExistCart.products.find(
+          (p) => p.variant == product.variant
         );
-        return res.json(await updatedCart.populate("products.product"));
-      } else {
-        console.log("product not exist")
-        console.log(product)
-        const updatedCart = await Cart.findOneAndUpdate(
-          { orderby: user._id },
-          {
-            $push: {
-              products: {
-                product: product.productId,
-                count: product.count,
-                variant: product.variant,
-                price: product.price,
+        if (productExist) {
+          console.log("product exist")
+          console.log(productExist);
+          console.log(product.price * product.count);
+          console.log(alreadyExistCart.cartTotal + product.price * product.count)
+          const updatedCart = await Cart.findOneAndUpdate(
+            {
+              orderby: user._id,
+              "products.variant": product.variant,
+            },
+            {
+              $inc: {
+                "products.$.count": product.count,
+                cartTotal: product.price * product.count,
+
               },
             },
-            $set: { cartTotal: alreadyExistCart.cartTotal + product.price * product.count }
-          },
-          { new: true }
-        );
-        return res.json(await updatedCart.populate("products.product"));
+            { new: true }
+          );
+          return res.json(await updatedCart.populate("products.product"));
+        } else {
+          console.log("product not exist")
+          console.log(product)
+
+          // proceed to add product in cart
+          const updatedCart = await Cart.findOneAndUpdate(
+            { orderby: user._id },
+            {
+              $push: {
+                products: {
+                  product: product.productId,
+                  count: product.count,
+                  variant: product.variant,
+                  price: product.price,
+                  itemId: itemId,
+                },
+              },
+              $set: { cartTotal: alreadyExistCart.cartTotal + product.price * product.count }
+            },
+            { new: true }
+          );
+          return res.json(await updatedCart.populate("products.product"));
+        }
       }
-    }
-    else {
-      console.log("no cart found")
-      cartTotal = product.price * product.count;
-      let newCart = await new Cart({
-        products: [
-          {
-            product: product.productId,
-            count: product.count,
-            variant: product.variant,
-            price: product.price,
-          },
-        ],
-        cartTotal,
-        orderby: user?._id,
-      }).save();
-      result = await newCart.populate("products.product");
-      return res.json(result);
+      else {
+        console.log("no cart found")
+        cartTotal = product.price * product.count;
+        let newCart = await new Cart({
+          products: [
+            {
+              product: product.productId,
+              count: product.count,
+              variant: product.variant,
+              price: product.price,
+              itemId: itemId,
+            },
+          ],
+          cartTotal,
+          orderby: user?._id,
+        }).save();
+        result = await newCart.populate("products.product");
+        return res.json(result);
+      }
     }
   } catch (error) {
     throw new Error(error);
@@ -959,25 +1052,106 @@ function verifyPaymentSignature(order_id, razorpay_payment_id, razorpay_signatur
     return false;
   }
 }
+
+
+
 // post checkout order creation
 const createOrder = asyncHandler(async (req, res) => {
   const { paymentId, amount, shipping, shippingAddress, msc, orderId, paymentSignature } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
+
     // verify signatures here
     const isAuthentic = verifyPaymentSignature(orderId, paymentId, paymentSignature);
     if (!isAuthentic) {
       throw new Error("Payment Signature is not authentic invalid payment");
     }
-
-
+    const accessToken = await zohoAuth();
     const user = await User.findById(_id);
     let userCart = await Cart.findOne({ orderby: user._id });
+    // generate invoice in zoho books
+    const customerId = user?.zohoCustomerId;
+    if (!customerId) {
+      // create customer in zohobooks
+      const customerPayload = {
+        contact_name: user.email,
+        contact_type: 'customer',
+        contact_subtype: 'individual',
+        contact_persons: [
+          {
+            first_name: user.firstname,
+            last_name: user.lastname,
+            email: user?.email,
+            phone: user?.mobile,
+          }
+        ],
+      };
 
+
+      const customer = await zohoBookApi.post(`/contacts?organization_id=${org}`, customerPayload,
+        {
+          headers: {
+            authorization: `Zoho-oauthtoken ${accessToken}`
+          }
+        }
+      );
+
+      // update customer id in user
+
+      user.zohoCustomerId = customer.data.contact.contact_id;
+      await user.save();
+
+    }
+    const zohoInvoicePayload = {
+      customer_id: customerId,
+      line_items: userCart.products.map((item) => {
+        return {
+          item_id: item.itemId,
+          quantity: item.count,
+        };
+      }),
+    };
+    console.log(zohoInvoicePayload);
+    const invoice = await zohoBookApi.post(`/invoices?organization_id=${org}`, zohoInvoicePayload,
+      {
+        headers: {
+          authorization: `Zoho-oauthtoken ${accessToken}`
+        }
+      });
+    console.log(invoice.data.invoice.invoice_id);
+    // const zohoInvoiceId = invoice.data.invoice.invoice_id;
+    // pay the invoice
+    const invoiceId = invoice.data.invoice.invoice_id;
+    const total = invoice.data.invoice.total;
+    const date = invoice.data.invoice.date;
+    const paymentPayload = {
+      customer_id: customerId,
+      payment_mode: "banktransfer",
+      amount: total,
+      date: date,
+      invoice_id: invoiceId,
+      amount_applied: total,
+      invoices: [
+        {
+          invoice_id: invoiceId,
+          amount_applied: total
+        }
+      ]
+    };
+    const payment = await zohoBookApi.post(`/customerpayments?organization_id=${org}`, paymentPayload,
+      {
+        headers: {
+          authorization: `Zoho-oauthtoken ${accessToken}`
+        }
+      });
+    console.log(payment.data);
+    console.log(payment.data.payment.payment_id);
 
     let newOrder = await new Order({
       products: userCart.products,
+      zohoInvoiceId: invoice.data.invoice.invoice_id,
+      zohoPaymentId: payment.data.payment.payment_id,
       paymentIntent: {
         id: paymentId,
         rzporderId: orderId,
@@ -1170,6 +1344,8 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
+
 
 const cancelOrder = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -1483,11 +1659,26 @@ const getOrderByUserId = asyncHandler(async (req, res) => {
   }
 });
 
+
+// ship the order and update the status
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status, trackingnumber } = req.body;
   const { id } = req.params;
   validateMongoDbId(id);
   try {
+    if (status === "Shipped" && !trackingnumber) throw new Error("Tracking number is required for shipped status");
+    if (status === "Shipped") {
+      const payload = {
+        "order_id": id,
+        "shipment": {
+          "courier_name": "Fedex",
+          "tracking_id": trackingnumber
+        }
+      };
+      // call wrapper api of shiprocket to ship the order
+      // const shiprocket = new Shiprocket();
+      // 
+    }
     const updateOrderStatus = await Order.findByIdAndUpdate(
       id,
       {
@@ -1548,6 +1739,20 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
     res.json(updateOrderStatus);
 
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+
+// tracking order webhook
+const trackingOrder = asyncHandler(async (req, res) => {
+  const { order_id, shipment } = req.body;
+  try {
+    const order = await Order.findById(order_id);
+    order.shipment = shipment;
+    await order.save();
+    res.json(order);
   } catch (error) {
     throw new Error(error);
   }

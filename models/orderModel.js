@@ -15,6 +15,12 @@ var orderSchema = new mongoose.Schema(
       },
     ],
     paymentIntent: {},
+    zohoInvoiceId: {
+      type: String,
+    },
+    zohoPaymentId: {
+      type: String,
+    },
     orderStatus: {
       type: String,
       default: "Processing",
@@ -32,6 +38,9 @@ var orderSchema = new mongoose.Schema(
     },
     trackingNumber: {
       type: String,
+    },
+    shipmentInfo: {
+      type: {},
     },
     shippingAddress: {
       type: {},

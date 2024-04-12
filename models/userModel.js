@@ -54,6 +54,9 @@ var userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    zohoCustomerId: {
+      type: String,
+    },
   },
   {
     timestamps: true,
