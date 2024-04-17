@@ -3,6 +3,7 @@ const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
 const Address = require("../models/addressModal");
 const Order = require("../models/orderModel");
+const ShiprocketAPI = require('../models/shiprocketapi');
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongoDbId = require("../utils/validateMongodbId");
@@ -12,6 +13,10 @@ const jwt = require("jsonwebtoken");
 const { sendResendEmail } = require("../utils/sendResendEmail");
 require("dotenv").config();
 const fs = require('fs');
+const { createShipment, shiprocketLogin } = require('../utils/shiprocketapi');
+
+
+
 const BASE_URL = process.env.BASE_URL;
 const { zohoBookApi } = require("../utils/zohoapi");
 const axios = require('axios');
@@ -1670,85 +1675,152 @@ const getOrderByUserId = asyncHandler(async (req, res) => {
 
 // ship the order and update the status
 const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { status, trackingnumber } = req.body;
+  console.log(req.body);
+  const { status, w, l, b, h
+  } = req.body;
   const { id } = req.params;
   validateMongoDbId(id);
-  try {
-    if (status === "Shipped" && !trackingnumber) throw new Error("Tracking number is required for shipped status");
-    if (status === "Shipped") {
-      const payload = {
-        "order_id": id,
-        "shipment": {
-          "courier_name": "Fedex",
-          "tracking_id": trackingnumber
-        }
-      };
-      // call wrapper api of shiprocket to ship the order
-      // const shiprocket = new Shiprocket();
-      // 
-    }
-    const updateOrderStatus = await Order.findByIdAndUpdate(
-      id,
-      {
-        orderStatus: status,
-        trackingNumber: trackingnumber,
-      },
-      { new: true }
-    ).populate("orderby").exec();
+  // get order details
 
-    sendResendEmail(
-      to = updateOrderStatus.orderby.email,
-      subject = `Order Status Updated ${updateOrderStatus._id}`,
-      html = `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Order Update Notification</title>
-          <style>
-              body {
-                  font-family: Arial, sans-serif;
-                  line-height: 1.6;
-                  margin: 0;
-                  padding: 0;
-                  background-color: #f5f5f5;
-              }
-              .container {
-                  max-width: 600px;
-                  margin: 20px auto;
-                  padding: 20px;
-                  background-color: #fff;
-                  border-radius: 5px;
-                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-              }
-              h1 {
-                  color: #333;
-              }
-              p {
-                  margin-bottom: 20px;
-              }
-          </style>
-      </head>
-      <body>
-          <div class="container">
-              <h1>Order Update Notification</h1>
-              <p>Dear Customer,</p>
-              <p>We are pleased to inform you that your order with Order ID: <strong>${updateOrderStatus._id}</strong> has been updated.</p>
-              <p><strong>Order Status:</strong> ${status}</p>
-              <p><strong>Tracking Number:</strong> ${trackingnumber}</p>
-              <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
-              <p>Warm regards,</p>
-              <p><em>MediShield Healthcare PVT. LTD.</em></p>
-          </div>
-      </body>
-      </html>
-      `
-    )
+  try {
+    if (status !== "Shipped" || !w || !l || !b || !h) throw new Error("Weight, length, breadth and height are required");
+    else if (status === "Shipped") {
+      const apiKey = await ShiprocketAPI.findOne({}).sort({ createdAt: -1 }).exec();
+      const order = await Order.findById(id).populate("products.product").populate("orderby").exec();
+      // create payload for shipment
+
+      payload = {
+        "order_id": order._id.toString(),
+        "order_date": new Date().toISOString(),
+        "billing_customer_name": order.orderby.firstname,
+        "billing_last_name": order.orderby.lastname,
+        "billing_address": order.shippingAddress.address,
+        "billing_city": order.shippingAddress.city,
+        "billing_state": order.shippingAddress.state,
+        "billing_country": order.shippingAddress.country,
+        "billing_pincode": order.shippingAddress.pincode,
+        "billing_email": order.orderby.email,
+        "billing_phone": order.shippingAddress.mobile,
+        "shipping_is_billing": "1",
+        "order_items": order.products.map((item) => {
+          return {
+            "name": item.product.name,
+            "sku": item.variant,
+            "units": item.count,
+            "selling_price": item.price,
+          };
+        }),
+        "payment_method": "prepaid",
+        "shipping_charges": order.paymentIntent.shipping,
+        "sub_total": order.paymentIntent.amount,
+        "weight": w,
+        "length": l,
+        "breadth": b,
+        "height": h,
+        "pickup_location": "Primary"
+      }
+      if (!apiKey) {
+        console.log('API key not found or expired');
+        // Reauth the API key
+        const access_key = await shiprocketLogin();
+        // shipment creation
+        const response = await createShipment(payload, access_key);
+        const updateOrderStatus = await Order.findByIdAndUpdate(
+          id,
+          {
+            orderStatus: status,
+            shipmentInfo: response,
+          },
+          { new: true }
+        ).populate("orderby").exec();
+
+      } else if (apiKey.expirationDate < new Date()) {
+        console.log('API key has expired reauth');
+        // Reauth the API key
+        const access_key = await shiprocketLogin();
+        // shipment creation
+        const response = await createShipment(payload, access_key);
+        const updateOrderStatus = await Order.findByIdAndUpdate(
+          id,
+          {
+            orderStatus: status,
+            shipmentInfo: response,
+          },
+          { new: true }
+        ).populate("orderby").exec();
+
+      } else {
+        console.log('API key is valid');
+        // Make API request using the valid API key
+        const response = await createShipment(payload, apiKey.key);
+        const updateOrderStatus = await Order.findByIdAndUpdate(
+          id,
+          {
+            orderStatus: status,
+            shipmentInfo: response,
+          },
+          { new: true }
+        ).populate("orderby").exec();
+      }
+
+    }
+
+
+    // sendResendEmail(
+    //   to = updateOrderStatus.orderby.email,
+    //   subject = `Order Status Updated ${updateOrderStatus._id}`,
+    //   html = `<!DOCTYPE html>
+    //   <html lang="en">
+    //   <head>
+    //       <meta charset="UTF-8">
+    //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    //       <title>Order Update Notification</title>
+    //       <style>
+    //           body {
+    //               font-family: Arial, sans-serif;
+    //               line-height: 1.6;
+    //               margin: 0;
+    //               padding: 0;
+    //               background-color: #f5f5f5;
+    //           }
+    //           .container {
+    //               max-width: 600px;
+    //               margin: 20px auto;
+    //               padding: 20px;
+    //               background-color: #fff;
+    //               border-radius: 5px;
+    //               box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    //           }
+    //           h1 {
+    //               color: #333;
+    //           }
+    //           p {
+    //               margin-bottom: 20px;
+    //           }
+    //       </style>
+    //   </head>
+    //   <body>
+    //       <div class="container">
+    //           <h1>Order Update Notification</h1>
+    //           <p>Dear Customer,</p>
+    //           <p>We are pleased to inform you that your order with Order ID: <strong>${updateOrderStatus._id}</strong> has been updated.</p>
+    //           <p><strong>Order Status:</strong> ${status}</p>
+    //           <p><strong>Tracking Number:</strong> ${trackingnumber}</p>
+    //           <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
+    //           <p>Warm regards,</p>
+    //           <p><em>MediShield Healthcare PVT. LTD.</em></p>
+    //       </div>
+    //   </body>
+    //   </html>
+    //   `
+    // )
 
     res.json(updateOrderStatus);
 
   } catch (error) {
+    console.log(error);
     throw new Error(error);
+
   }
 });
 

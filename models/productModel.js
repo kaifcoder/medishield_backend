@@ -39,6 +39,7 @@ const productSchema = new mongoose.Schema({
   is_cod: String,
   weight: String,
   max_sale_qty: Number,
+  published: Boolean,
   pd_expiry_date: Date,
   price: priceSchema,
   media_gallery_entries: [mediaEntrySchema],

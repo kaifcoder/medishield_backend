@@ -4,13 +4,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const zohoAuthData = {
-    client_id: process.env.ZOHO_CLIENT_ID,
-    client_secret: process.env.ZOHO_CLIENT_SECRET,
-    refresh_token: process.env.ZOHO_REFRESH_TOKEN,
+    client_id: process.env.MEDISHIELD_ZOHO_CLIENT_ID,
+    client_secret: process.env.MEDISHIELD_ZOHO_CLIENT_SECRET,
+    refresh_token: process.env.MEDISHIELD_ZOHO_REFRESH_TOKEN,
     grant_type: 'refresh_token'
 };
 
-const org = process.env.ZOHO_ORG_ID
+const org = process.env.MEDISHIELD_ZOHO_ORG_ID
 
 
 const main = async () => {
@@ -20,11 +20,12 @@ const main = async () => {
     ` );
     console.log(zohoAuthResponse.data.access_token);
     const accessToken = zohoAuthResponse.data.access_token;
-    const sku = 'test2'
-    const customerId = '1811101000000024050'
-    // create customer 
 
-    console.log(customer.data);
+    // const sku = 'test2'
+    // const customerId = '1811101000000024050'
+    // // create customer 
+
+    // console.log(customer.data);
 
     // const item = await zohoBookApi.get(`/items?organization_id=${org}&sku=${sku}`,
     //     {
