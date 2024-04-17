@@ -1072,6 +1072,7 @@ const createOrder = asyncHandler(async (req, res) => {
     let userCart = await Cart.findOne({ orderby: user._id });
     // generate invoice in zoho books
     const customerId = user?.zohoCustomerId;
+
     if (!customerId) {
       // create customer in zohobooks
       const customerPayload = {
@@ -1102,8 +1103,11 @@ const createOrder = asyncHandler(async (req, res) => {
 
       user.zohoCustomerId = customer.data.contact.contact_id;
       await user.save();
-
+      customerId = customer.data.contact.contact_id;
     }
+
+
+
     const zohoInvoicePayload = {
       customer_id: customerId,
       line_items: userCart.products.map((item) => {
