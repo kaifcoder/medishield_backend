@@ -1712,7 +1712,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         }),
         "payment_method": "prepaid",
         "shipping_charges": order.paymentIntent.shipping,
-        "sub_total": order.paymentIntent.amount,
+        "sub_total": order.paymentIntent.amount - order.paymentIntent.shipping,
         "weight": w,
         "length": l,
         "breadth": b,
