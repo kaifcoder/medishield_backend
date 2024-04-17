@@ -1110,6 +1110,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
     const zohoInvoicePayload = {
       customer_id: customerId,
+      salesperson_name: 'APP',
       line_items: userCart.products.map((item) => {
         return {
           item_id: item.itemId,
