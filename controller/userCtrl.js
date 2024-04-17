@@ -1099,6 +1099,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
       // update customer id in user
 
+
       user.zohoCustomerId = customer.data.contact.contact_id;
       await user.save();
 
@@ -1336,6 +1337,8 @@ const createOrder = asyncHandler(async (req, res) => {
     `
     )
     );
+
+    //create shipping order
 
     res.json({
       message: "success"

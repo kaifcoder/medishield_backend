@@ -82,25 +82,12 @@ const main = async () => {
         billing_email: '',
         billing_phone: '9999999999',
         shipping_is_billing: true,
-        shipping_customer_name: 'John Doe',
-        shipping_last_name: 'Doe',
-        shipping_address: 'Address',
-        shipping_city: 'Pune',
-        shipping_state: 'MH',
-        shipping_zip: '411001',
-        shipping_country: 'India',
-        shipping_email: '',
-        shipping_phone: '9999999999',
         order_items: [
             {
                 name: 'Test Product',
                 sku: 'test',
                 units: 1,
                 selling_price: 100,
-                discount: 0,
-                tax: 0,
-                hsn: 1234,
-                warehouse: 'WH1'
             }
         ]
     };
