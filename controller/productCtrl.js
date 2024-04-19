@@ -160,7 +160,8 @@ const getAllProduct = asyncHandler(async (req, res) => {
         ...queryObj, "$or": [{ name: { $regex: req.query.search, $options: "i" } },
         { manufacturer: { $regex: req.query.search, $options: "i" } },
         { short_description: { $regex: req.query.search, $options: "i" } },
-        ]
+        ],
+        published: true
       });
     }
 
