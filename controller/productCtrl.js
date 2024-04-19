@@ -210,14 +210,14 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
     const {
       page
     } = req.query;
-    const skip = (page - 1) * 50;
+    const skip = (page - 1) * 52;
     const productCount = await Product.countDocuments();
     if (page || page < 1) {
       if (page > productCount) throw new Error("This Page does not exists");
     }
     const product = await Product.find({
 
-    }).skip(skip).limit(50);
+    }).skip(skip).limit(52);
     res.json({ data: product, count: productCount });
   } catch (error) {
     throw new Error(error);
