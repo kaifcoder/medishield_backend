@@ -47,7 +47,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 const getaProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
-    const findProduct = await Product.find({ id: id });
+    const findProduct = await Product.find({ id: id, published: true });
     res.json({ data: findProduct });
   } catch (error) {
     throw new Error(error);
@@ -112,10 +112,13 @@ const contextualSearch = asyncHandler(async (req, res) => {
             query: search,
             path: {
               wildcard: "*",
+
             },
           },
+
         },
       },
+
       {
         $limit: 3
       },
@@ -163,7 +166,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
     // if category is present then filter by category
     if (req.query.category) {
-      queryStr = JSON.stringify({ ...queryObj, categories: { name: req.query.category } });
+      queryStr = JSON.stringify({ ...queryObj, categories: { name: req.query.category }, published: true });
     }
 
 
@@ -211,7 +214,9 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
     if (page || page < 1) {
       if (page > productCount) throw new Error("This Page does not exists");
     }
-    const product = await Product.find().skip(skip).limit(50);
+    const product = await Product.find({
+
+    }).skip(skip).limit(50);
     res.json({ data: product, count: productCount });
   } catch (error) {
     throw new Error(error);
