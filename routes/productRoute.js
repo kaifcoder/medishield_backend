@@ -12,11 +12,13 @@ const {
   getAllProductsAdmin,
   getaProductwithSku,
   contextualSearch,
+  exportAllProducts,
 } = require("../controller/productCtrl");
 const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.get("/banner/getBannerProduct", getAllBannerProducts);
+router.get("/export/all", authMiddleware, isAdmin, exportAllProducts);
 
 router.get("/:id", getaProduct);
 router.put("/wishlist", authMiddleware, addToWishlist);

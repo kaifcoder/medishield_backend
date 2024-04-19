@@ -4,6 +4,7 @@ const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongoDbId = require("../utils/validateMongodbId");
 const Banner = require("../models/bannerModel");
+const Brand = require("../models/brandModel");
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -224,6 +225,37 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
   }
 });
 
+const exportAllProducts = asyncHandler(async (req, res) => {
+  try {
+    const product = await Product.find();
+
+    // prepare csv content
+    let productcsv = "sno,id, name, sku, barcode, price, stock, published, manufacturer\n";
+    product.forEach(async (product, i) => {
+
+      if (product.childProducts.length > 1) {
+        product.childProducts.forEach(async (childProduct) => {
+
+          productcsv += `${i + 1},${product._id}, ${childProduct.name.replace(/,/g, ';')}, ${childProduct?.sku.replace(/,/g, ';')}, ${childProduct?.barcode}, ${childProduct.price.minimalPrice.amount.value},${product.max_sale_qty}, ${product.published}, ${childProduct.manufacturer}\n`;
+        });
+      } else {
+        productcsv += `${i + 1},${product._id}, ${product.name.replace(/,/g, ';')}, ${product.sku.replace(/,/g, ';')}, ${product.barcode}, ${product.price.minimalPrice}, ${product.max_sale_qty}, ${product.published}, ${product.manufacturer}\n`;
+      }
+
+    });
+
+
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=products.csv");
+    res.send(productcsv);
+
+
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 const addToWishlist = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const { prodId } = req.body;
@@ -318,5 +350,6 @@ module.exports = {
   getAllBannerProducts,
   getAllProductsAdmin,
   getaProductwithSku,
-  contextualSearch
+  contextualSearch,
+  exportAllProducts
 };
