@@ -157,9 +157,14 @@ const getAllProduct = asyncHandler(async (req, res) => {
     let queryStr = JSON.stringify(queryObj);
 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    if (req.query.search.length == 0) {
+      res.json({ data: [] });
+    }
 
     // if search is present then filter by search
-    if (req.query.search) {
+
+    if (req.query.search && req.query.search.length > 0) {
+
       queryStr = JSON.stringify({
         ...queryObj, "$or": [{ name: { $regex: req.query.search, $options: "i" } },
         { manufacturer: { $regex: req.query.search, $options: "i" } },
@@ -167,6 +172,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
         ],
         published: true
       });
+
     }
 
     // if category is present then filter by category

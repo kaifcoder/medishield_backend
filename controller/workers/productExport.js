@@ -7,11 +7,14 @@ const exportAllProducts = async () => {
 
     try {
         // connect to db
-        await mongoose.connect(workerData, {
+        mongoose.connect(workerData, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
-        const products = await Product.find();
+
+        const products = await Product.find().select(
+            '_id name sku barcode price max_sale_qty published manufacturer childProducts'
+        ).sort({ name: 1 });
         // prepare csv content
         let productcsv = "sno,id, name, sku, barcode, price, stock, published, manufacturer\n";
         products.forEach(async (product, i) => {
