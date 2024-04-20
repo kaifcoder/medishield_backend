@@ -157,7 +157,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
     let queryStr = JSON.stringify(queryObj);
 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    if (req.query.search.length == 0) {
+    if (req.query.search && req.query.search.length == 0) {
       res.json({ data: [] });
     }
 
