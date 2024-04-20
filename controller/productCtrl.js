@@ -5,6 +5,9 @@ const slugify = require("slugify");
 const validateMongoDbId = require("../utils/validateMongodbId");
 const Banner = require("../models/bannerModel");
 const Brand = require("../models/brandModel");
+const { Worker } = require('worker_threads');
+const dotenv = require("dotenv");
+dotenv.config();
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -227,31 +230,32 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
 
 const exportAllProducts = asyncHandler(async (req, res) => {
   try {
-    const product = await Product.find();
 
-    // prepare csv content
-    let productcsv = "sno,id, name, sku, barcode, price, stock, published, manufacturer\n";
-    product.forEach(async (product, i) => {
 
-      if (product.childProducts.length > 1) {
-        product.childProducts.forEach(async (childProduct) => {
-
-          productcsv += `${i + 1},${product._id}, ${childProduct.name.replace(/,/g, ';')}, ${childProduct?.sku.replace(/,/g, ';')}, ${childProduct?.barcode}, ${childProduct.price.minimalPrice.amount.value},${product.max_sale_qty}, ${product.published}, ${childProduct.manufacturer}\n`;
-        });
-      } else {
-        productcsv += `${i + 1},${product._id}, ${product.name.replace(/,/g, ';')}, ${product.sku.replace(/,/g, ';')}, ${product.barcode}, ${product.price.minimalPrice}, ${product.max_sale_qty}, ${product.published}, ${product.manufacturer}\n`;
+    let worker = new Worker('./controller/workers/productExport.js',
+      {
+        workerData: process.env.MONGODB_URL
       }
-
+    );
+    worker.on('message', (data) => {
+      const csv = Buffer.from(data, 'utf-8');
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=products.csv");
+      res.send(csv);
+    });
+    worker.on('error', (error) => {
+      console.log(error);
+      throw new Error(error);
     });
 
-
-
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=products.csv");
-    res.send(productcsv);
-
+    // dispose the worker
+    worker.on('exit', (code) => {
+      if (code !== 0)
+        throw new Error(`Worker stopped with exit code ${code}`);
+    });
 
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 });
