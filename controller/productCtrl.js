@@ -211,6 +211,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
     const product = await query;
     res.json({ data: product });
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 });
