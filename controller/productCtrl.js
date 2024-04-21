@@ -157,13 +157,11 @@ const getAllProduct = asyncHandler(async (req, res) => {
     let queryStr = JSON.stringify(queryObj);
 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    if (req.query.search && req.query.search.length == 0) {
-      res.json({ data: [] });
-    }
 
     // if search is present then filter by search
 
-    if (req.query.search && req.query.search.length > 0) {
+    if (req.query.search && req.query.search !== "") {
+
 
       queryStr = JSON.stringify({
         ...queryObj, "$or": [{ name: { $regex: req.query.search, $options: "i" } },
@@ -172,6 +170,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
         ],
         published: true
       });
+
 
     }
 
@@ -198,11 +197,17 @@ const getAllProduct = asyncHandler(async (req, res) => {
     } else {
       query = query.select("-__v");
     }
+    let page = req.query.page;
+    let limit = req.query.limit;
+
+    if (req.query.search && req.query.search === "" || !req.query.search) {
+      console.log("search is empty");
+      page = 1;
+      limit = 12;
+    }
 
     // pagination
-    const page = req.query.page;
-    const limit = req.query.limit;
-    const skip = (page - 1) * limit;
+    let skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
     if (req.query.page) {
       const productCount = await Product.countDocuments();
@@ -349,6 +354,40 @@ const rating = asyncHandler(async (req, res) => {
   }
 });
 
+const bulkOperation = asyncHandler(async (req, res) => {
+  try {
+    const { operation, productIds } = req.body;
+    console.log(operation, productIds);
+    if (operation === "delete") {
+      const deleteProduct = await Product.deleteMany({
+        _id: { $in: productIds },
+      });
+      res.json(deleteProduct);
+    }
+    if (operation === "publish") {
+      const publishProduct = await Product.updateMany({
+        _id: { $in: productIds },
+      },
+        {
+          published: true
+        });
+      res.json(publishProduct);
+    }
+    if (operation === "unpublish") {
+      const unpublishProduct = await Product.updateMany({
+        _id: { $in: productIds },
+      },
+        {
+          published: false
+        });
+      res.json(unpublishProduct);
+    }
+
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 module.exports = {
   createProduct,
   getaProduct,
@@ -362,5 +401,6 @@ module.exports = {
   getAllProductsAdmin,
   getaProductwithSku,
   contextualSearch,
-  exportAllProducts
+  exportAllProducts,
+  bulkOperation,
 };
