@@ -58,7 +58,11 @@ const getBrand = asyncHandler(async (req, res) => {
 // user side 
 const getallBrand = asyncHandler(async (req, res) => {
   try {
-    const getallBrand = await Brand.find();
+    let getallBrand = await Brand.find().sort({
+      name: 1
+    });
+    // sort by name in ascending order
+
     res.json({
       "data": getallBrand
     });

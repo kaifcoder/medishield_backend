@@ -222,8 +222,19 @@ const getAllProduct = asyncHandler(async (req, res) => {
 const getAllProductsAdmin = asyncHandler(async (req, res) => {
   try {
     const {
-      page
+      page,
+      search,
     } = req.query;
+    if (search) {
+      const product = await Product.find({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { manufacturer: { $regex: search, $options: "i" } },
+          { short_description: { $regex: search, $options: "i" } },
+        ],
+      });
+      res.json({ data: product, count: product.length });
+    }
     const skip = (page - 1) * 52;
     const productCount = await Product.countDocuments();
     if (page || page < 1) {
@@ -355,7 +366,8 @@ const rating = asyncHandler(async (req, res) => {
 const bulkOperation = asyncHandler(async (req, res) => {
   try {
     const { operation, productIds, data } = req.body;
-    console.log(operation, productIds);
+    console.log(operation, { productIds, data });
+
     if (operation === "delete") {
       const deleteProduct = await Product.deleteMany({
         _id: { $in: productIds },
