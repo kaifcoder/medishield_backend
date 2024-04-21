@@ -197,18 +197,14 @@ const getAllProduct = asyncHandler(async (req, res) => {
     } else {
       query = query.select("-__v");
     }
+
+
     let page = req.query.page;
     let limit = req.query.limit;
 
-    if ((req.query.search && req.query.search === "") || req.query.category || req.query.category === "") {
-      console.log("query is empty");
-      page = 1;
-      limit = 4;
-    }
-
     // pagination
-    page = req.query.page || 1;
-    limit = req.query.limit || 4;
+    page = req.query.page;
+    limit = req.query.limit;
     let skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
     if (req.query.page) {
