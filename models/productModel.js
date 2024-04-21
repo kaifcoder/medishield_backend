@@ -24,6 +24,24 @@ const priceSchema = new mongoose.Schema({
   regularPrice: Number
 }, { _id: false });
 
+const childProductsSchema = new mongoose.Schema({
+  id: Number,
+  image_url: String,
+  name: String,
+  sku: String,
+  special_price: Number,
+  short_description: String,
+  manufacturer: String,
+  average_rating: String,
+  max_sale_qty: Number,
+  rating_count: String,
+  is_in_stock: Boolean,
+  pd_expiry_date: Date,
+  price: {},
+  media_gallery_entries: [mediaEntrySchema],
+  categories: [categorySchema]
+}, { _id: false });
+
 const productSchema = new mongoose.Schema({
   id: Number,
   name: String,
@@ -53,23 +71,7 @@ const productSchema = new mongoose.Schema({
     features: String
   },
   featured: Boolean,
-  childProducts: [{
-    id: Number,
-    image_url: String,
-    name: String,
-    sku: String,
-    special_price: Number,
-    short_description: String,
-    manufacturer: String,
-    average_rating: String,
-    max_sale_qty: Number,
-    rating_count: String,
-    is_in_stock: Boolean,
-    pd_expiry_date: Date,
-    price: {},
-    media_gallery_entries: [mediaEntrySchema],
-    categories: [String]
-  }],
+  childProducts: [childProductsSchema],
   reviews: [{
     user: {
       type: mongoose.Schema.Types.ObjectId, ref: 'User'
