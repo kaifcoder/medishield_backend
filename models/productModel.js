@@ -28,7 +28,10 @@ const childProductsSchema = new mongoose.Schema({
   id: Number,
   image_url: String,
   name: String,
-  sku: String,
+  sku: {
+    type: String,
+    unique: true
+  },
   special_price: Number,
   short_description: String,
   manufacturer: String,
@@ -45,8 +48,14 @@ const childProductsSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema({
   id: Number,
   name: String,
-  sku: String,
-  barcode: String,
+  sku: {
+    type: String,
+    unique: true
+  },
+  barcode: {
+    type: String,
+    unique: true
+  },
   thumbnail_url: String,
   short_description: String,
   medishield_coins: Number,

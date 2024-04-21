@@ -354,7 +354,7 @@ const rating = asyncHandler(async (req, res) => {
 
 const bulkOperation = asyncHandler(async (req, res) => {
   try {
-    const { operation, productIds } = req.body;
+    const { operation, productIds, data } = req.body;
     console.log(operation, productIds);
     if (operation === "delete") {
       const deleteProduct = await Product.deleteMany({
@@ -379,6 +379,10 @@ const bulkOperation = asyncHandler(async (req, res) => {
           published: false
         });
       res.json(unpublishProduct);
+    }
+    if (operation === "import") {
+      const importProduct = await Product.insertMany(data);
+      res.json(importProduct);
     }
 
   } catch (error) {
