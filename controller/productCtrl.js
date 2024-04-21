@@ -200,8 +200,8 @@ const getAllProduct = asyncHandler(async (req, res) => {
     let page = req.query.page;
     let limit = req.query.limit;
 
-    if (req.query.search && req.query.search === "" || !req.query.search || !req.query.category) {
-      console.log("search is empty");
+    if (req.query.search && req.query.search === "" || !req.query.search || req.query.category || req.query.category === "") {
+      console.log("query is empty");
       page = 1;
       limit = 12;
     }
