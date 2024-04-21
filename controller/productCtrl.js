@@ -203,10 +203,12 @@ const getAllProduct = asyncHandler(async (req, res) => {
     if ((req.query.search && req.query.search === "") || req.query.category || req.query.category === "") {
       console.log("query is empty");
       page = 1;
-      limit = 12;
+      limit = 4;
     }
 
     // pagination
+    page = req.query.page || 1;
+    limit = req.query.limit || 4;
     let skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
     if (req.query.page) {
