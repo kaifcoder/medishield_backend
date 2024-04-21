@@ -233,7 +233,7 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
           { short_description: { $regex: search, $options: "i" } },
         ],
       });
-      res.json({ data: product, count: product.length });
+      return res.json({ data: product, count: product.length });
     }
     const skip = (page - 1) * 52;
     const productCount = await Product.countDocuments();
