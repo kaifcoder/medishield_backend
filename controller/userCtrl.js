@@ -14,6 +14,8 @@ const { sendResendEmail } = require("../utils/sendResendEmail");
 const { Worker } = require('worker_threads');
 require("dotenv").config();
 const fs = require('fs');
+const bcrypt = require("bcrypt");
+
 const { createShipment, shiprocketLogin } = require('../utils/shiprocketapi');
 
 
@@ -143,7 +145,12 @@ const updateAdmin = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
   try {
-
+    console.log(req.body);
+    let hashedPassword = req?.body?.password;
+    if (req?.body?.password) {
+      const salt = bcrypt.genSaltSync(10);
+      hashedPassword = await bcrypt.hash(hashedPassword, salt);
+    }
     const updatedAdmin = await User.findByIdAndUpdate(
       id,
       {
@@ -151,7 +158,7 @@ const updateAdmin = asyncHandler(async (req, res) => {
         lastname: req?.body?.lastname,
         email: req?.body?.email,
         permission: req?.body?.permission,
-        password: req?.body?.password,
+        password: hashedPassword,
       },
       {
         new: true,
@@ -444,7 +451,7 @@ const getUser = asyncHandler(async (req, res) => {
 const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   // check if user exists or not
-  const findAdmin = await User.findOne({ email });
+  const findAdmin = await User.findOne({ email }).populate("permission");
   if (!findAdmin) throw new Error("User Not Found");
   if (findAdmin.role !== "admin") throw new Error("Not Authorised");
   if (findAdmin && (await findAdmin.isPasswordMatched(password))) {
@@ -459,9 +466,24 @@ const loginAdmin = asyncHandler(async (req, res) => {
       email: findAdmin?.email,
       mobile: findAdmin?.mobile,
       token: token,
+      permission: findAdmin?.permission,
     });
   } else {
     throw new Error("Invalid Credentials");
+  }
+});
+
+const getUserPermissions = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
+  try {
+    const user = await
+      User.findById(_id).populate("permission");
+    res.json({
+      permission: user.permission.permissions
+    });
+  } catch (error) {
+    throw new Error(error);
   }
 });
 
@@ -1910,4 +1932,5 @@ module.exports = {
   getCSVforOrders,
   createAdmin,
   deleteAdmin,
+  getUserPermissions
 };

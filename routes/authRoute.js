@@ -40,6 +40,7 @@ const {
   createAdmin,
   getAllAdmins,
   updateAdmin,
+  getUserPermissions,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -75,6 +76,7 @@ router.put(
 
 router.get("/all-users", getallUser);
 router.get("/admins", authMiddleware, isAdmin, getAllAdmins);
+router.get("/get-permissions", authMiddleware, isAdmin, getUserPermissions);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/getmostbought", authMiddleware, getMostBoughtProducts);
 router.get("/getallorders", authMiddleware, isAdmin, getAllOrders);
