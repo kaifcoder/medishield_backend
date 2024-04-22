@@ -1725,6 +1725,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       let updateOrderStatus;
       payload = {
         "order_id": order._id.toString(),
+        "mode": "Surface",
         "order_date": new Date().toISOString(),
         "billing_customer_name": order.orderby.firstname,
         "billing_last_name": order.orderby.lastname,
