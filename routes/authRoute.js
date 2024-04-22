@@ -37,6 +37,8 @@ const {
   createRazorpayOrder,
   cancelOrder,
   getCSVforOrders,
+  createAdmin,
+  getAllAdmins,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -44,6 +46,7 @@ const router = express.Router();
 router.post("/login", loginUserCtrl);
 router.post("/register", createUser);
 router.post("/admin-login", loginAdmin);
+router.post("/admin-register", authMiddleware, isAdmin, createAdmin);
 router.get("/isUserExist/:uid", isUserExists);
 router.get("/verify-email/:token", isEmailVerified);
 router.get("/sendVerificationEmail/:id", sendVerificationEmail);
@@ -70,6 +73,7 @@ router.put(
 
 
 router.get("/all-users", getallUser);
+router.get("/admins", authMiddleware, isAdmin, getAllAdmins);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/getmostbought", authMiddleware, getMostBoughtProducts);
 router.get("/getallorders", authMiddleware, isAdmin, getAllOrders);
@@ -91,7 +95,7 @@ router.put("/update-address/:id", authMiddleware, updateAddress);
 
 
 router.delete("/empty-cart", authMiddleware, emptyCart);
-router.delete("/:id", deleteaUser);
+router.delete("/delete-user/:id", authMiddleware, isAdmin, deleteaUser);
 router.delete("/address/:id", authMiddleware, deleteAddress);
 
 router.post("/create-razorpay-order", authMiddleware, createRazorpayOrder);

@@ -41,7 +41,12 @@ const zohoAuth = async () => {
 
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
-
+  const iscreatingAdmin = req.body.role === "admin" ? true : false;
+  if (iscreatingAdmin) {
+    return res.json({
+      message: "Admin Creation is not allowed by users"
+    });
+  }
   const findUser = await User.findOne({ email: email });
   if (!findUser) {
 
@@ -97,6 +102,40 @@ const createUser = asyncHandler(async (req, res) => {
     });
   } else {
     throw new Error("User Already Exists Please Login");
+  }
+});
+
+const createAdmin = asyncHandler(async (req, res) => {
+
+  const email = req.body.email;
+  const findUser = await User.findOne({
+    email: email,
+  });
+  if (!findUser) {
+    const newUser = await User.create(req.body);
+    const referralCode = newUser._id.toString().slice(0, 9);
+    newUser.referralCode = referralCode;
+    await newUser.save();
+    res.json({
+      newUser
+    });
+  }
+  else {
+    throw new Error("Admin Already Exists");
+  }
+})
+
+const deleteAdmin = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+
+    const deletedAdmin = await User.findOneAndDelete({ email: id });
+    res.json({
+      deletedAdmin
+    });
+
+  } catch (error) {
+    throw new Error(error);
   }
 });
 
@@ -464,6 +503,31 @@ const updatedUser = asyncHandler(async (req, res) => {
   }
 });
 
+const updateAdmin = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
+
+    const updatedAdmin = await User.findByIdAndUpdate(
+      id,
+      {
+        firstname: req?.body?.firstname,
+        lastname: req?.body?.lastname,
+        email: req?.body?.email,
+        permission: req?.body?.permission,
+        password: req?.body?.password,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(updatedAdmin);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+
 // save user Address
 const saveAddress = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -554,6 +618,15 @@ const getallUser = asyncHandler(async (req, res) => {
   }
 });
 
+const getAllAdmins = asyncHandler(async (req, res) => {
+  try {
+    const admins = await User.find({ role: "admin" }).populate("permission");
+    res.json(admins);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 // Get a single user
 
 const getaUser = asyncHandler(async (req, res) => {
@@ -573,8 +646,6 @@ const getaUser = asyncHandler(async (req, res) => {
 
 const deleteaUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDbId(id);
-
   try {
     const deleteaUser = await User.deleteOne({ email: id });
     res.json({
@@ -1794,6 +1865,8 @@ const getSingleOrder = asyncHandler(async (req, res) => {
 module.exports = {
   createUser,
   loginUserCtrl,
+  getAllAdmins,
+  updateAdmin,
   getallUser,
   getaUser,
   deleteaUser,
@@ -1829,5 +1902,7 @@ module.exports = {
   getMostBoughtProducts,
   createRazorpayOrder,
   cancelOrder,
-  getCSVforOrders
+  getCSVforOrders,
+  createAdmin,
+  deleteAdmin,
 };

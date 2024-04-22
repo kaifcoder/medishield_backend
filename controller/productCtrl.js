@@ -176,7 +176,13 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
     // if category is present then filter by category
     if (req.query.category) {
-      queryStr = JSON.stringify({ ...queryObj, categories: { name: req.query.category }, published: true });
+      queryStr = JSON.stringify({
+        ...queryObj,
+        categories: {
+          $elemMatch: { name: { $regex: req.query.category, $options: "i" } },
+        }
+        , published: true
+      });
     }
 
 
@@ -224,6 +230,7 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
     const {
       page,
       search,
+      brand
     } = req.query;
     if (search) {
       const product = await Product.find({
@@ -234,6 +241,19 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
         ],
       });
       return res.json({ data: product, count: product.length });
+    }
+    if (brand) {
+      const product = await Product.find({
+        $or: [
+          { manufacturer: { $regex: brand, $options: "i" } },
+          {
+            categories: {
+              $elemMatch: { name: { $regex: brand, $options: "i" } },
+            },
+          }
+        ]
+      });
+      return res.json({ data: product });
     }
     const skip = (page - 1) * 52;
     const productCount = await Product.countDocuments();
