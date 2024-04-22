@@ -115,7 +115,7 @@ const createAdmin = asyncHandler(async (req, res) => {
     const newUser = await User.create(req.body);
     const referralCode = newUser._id.toString().slice(0, 9);
     newUser.referralCode = referralCode;
-    await newUser.save();
+    (await newUser.save()).populate("permission");
     res.json({
       newUser
     });
@@ -137,6 +137,31 @@ const deleteAdmin = asyncHandler(async (req, res) => {
   } catch (error) {
     throw new Error(error);
   }
+});
+
+const updateAdmin = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
+
+    const updatedAdmin = await User.findByIdAndUpdate(
+      id,
+      {
+        firstname: req?.body?.firstname,
+        lastname: req?.body?.lastname,
+        email: req?.body?.email,
+        permission: req?.body?.permission,
+        password: req?.body?.password,
+      },
+      {
+        new: true,
+      }
+    ).populate("permission");
+    res.json(updatedAdmin);
+  } catch (error) {
+    throw new Error(error);
+  }
+
 });
 
 const isEmailVerified = asyncHandler(async (req, res) => {
@@ -503,29 +528,7 @@ const updatedUser = asyncHandler(async (req, res) => {
   }
 });
 
-const updateAdmin = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  validateMongoDbId(id);
-  try {
 
-    const updatedAdmin = await User.findByIdAndUpdate(
-      id,
-      {
-        firstname: req?.body?.firstname,
-        lastname: req?.body?.lastname,
-        email: req?.body?.email,
-        permission: req?.body?.permission,
-        password: req?.body?.password,
-      },
-      {
-        new: true,
-      }
-    );
-    res.json(updatedAdmin);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
 
 
 // save user Address
@@ -628,7 +631,6 @@ const getAllAdmins = asyncHandler(async (req, res) => {
 });
 
 // Get a single user
-
 const getaUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
@@ -1698,7 +1700,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       const apiKey = await ShiprocketAPI.findOne({}).sort({ createdAt: -1 }).exec();
       const order = await Order.findById(id).populate("products.product").populate("orderby").exec();
       // create payload for shipment
-
+      let updateOrderStatus;
       payload = {
         "order_id": order._id.toString(),
         "order_date": new Date().toISOString(),
@@ -1735,7 +1737,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         const access_key = await shiprocketLogin();
         // shipment creation
         const response = await createShipment(payload, access_key);
-        const updateOrderStatus = await Order.findByIdAndUpdate(
+        updateOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
             orderStatus: status,
@@ -1750,7 +1752,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         const access_key = await shiprocketLogin();
         // shipment creation
         const response = await createShipment(payload, access_key);
-        const updateOrderStatus = await Order.findByIdAndUpdate(
+        updateOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
             orderStatus: status,
@@ -1763,7 +1765,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         console.log('API key is valid');
         // Make API request using the valid API key
         const response = await createShipment(payload, apiKey.key);
-        const updateOrderStatus = await Order.findByIdAndUpdate(
+        updateOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
             orderStatus: status,
@@ -1776,54 +1778,57 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     }
 
 
-    // sendResendEmail(
-    //   to = updateOrderStatus.orderby.email,
-    //   subject = `Order Status Updated ${updateOrderStatus._id}`,
-    //   html = `<!DOCTYPE html>
-    //   <html lang="en">
-    //   <head>
-    //       <meta charset="UTF-8">
-    //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    //       <title>Order Update Notification</title>
-    //       <style>
-    //           body {
-    //               font-family: Arial, sans-serif;
-    //               line-height: 1.6;
-    //               margin: 0;
-    //               padding: 0;
-    //               background-color: #f5f5f5;
-    //           }
-    //           .container {
-    //               max-width: 600px;
-    //               margin: 20px auto;
-    //               padding: 20px;
-    //               background-color: #fff;
-    //               border-radius: 5px;
-    //               box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    //           }
-    //           h1 {
-    //               color: #333;
-    //           }
-    //           p {
-    //               margin-bottom: 20px;
-    //           }
-    //       </style>
-    //   </head>
-    //   <body>
-    //       <div class="container">
-    //           <h1>Order Update Notification</h1>
-    //           <p>Dear Customer,</p>
-    //           <p>We are pleased to inform you that your order with Order ID: <strong>${updateOrderStatus._id}</strong> has been updated.</p>
-    //           <p><strong>Order Status:</strong> ${status}</p>
-    //           <p><strong>Tracking Number:</strong> ${trackingnumber}</p>
-    //           <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
-    //           <p>Warm regards,</p>
-    //           <p><em>MediShield Healthcare PVT. LTD.</em></p>
-    //       </div>
-    //   </body>
-    //   </html>
-    //   `
-    // )
+    sendResendEmail(
+      to = updateOrderStatus.orderby.email,
+      subject = `Order Status Updated ${updateOrderStatus._id}`,
+      html = `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Order Update Notification</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  margin: 0;
+                  padding: 0;
+                  background-color: #f5f5f5;
+              }
+              .container {
+                  max-width: 600px;
+                  margin: 20px auto;
+                  padding: 20px;
+                  background-color: #fff;
+                  border-radius: 5px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+              }
+              h1 {
+                  color: #333;
+              }
+              p {
+                  margin-bottom: 20px;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>Order Update Notification</h1>
+              <p>Dear Customer,</p>
+              <p>We are pleased to inform you that your order with Order ID: <strong>${updateOrderStatus._id}</strong> has been updated.</p>
+              <p><strong>Order Status:</strong> ${status}</p>
+              <p><strong>Tracking Number:</strong> ${updateOrderStatus.shipmentInfo ? updateOrderStatus.shipmentInfo.awb_code : "N/A"
+      }</p>
+              <p><strong>courier name:</strong> ${updateOrderStatus.shipmentInfo ? updateOrderStatus.shipmentInfo.courier_name : "N/A"
+      }</p>
+              <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
+              <p>Warm regards,</p>
+              <p><em>MediShield Healthcare PVT. LTD.</em></p>
+          </div>
+      </body>
+      </html>
+      `
+    )
 
     res.json(updateOrderStatus);
 

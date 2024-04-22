@@ -39,6 +39,7 @@ const {
   getCSVforOrders,
   createAdmin,
   getAllAdmins,
+  updateAdmin,
 } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -92,7 +93,7 @@ router.get("/:id", authMiddleware, isAdmin, getaUser);
 router.put("/save-address", authMiddleware, saveAddress);
 router.put("/edit-user", authMiddleware, updatedUser);
 router.put("/update-address/:id", authMiddleware, updateAddress);
-
+router.put("/update-admin/:id", authMiddleware, isAdmin, updateAdmin);
 
 router.delete("/empty-cart", authMiddleware, emptyCart);
 router.delete("/delete-user/:id", authMiddleware, isAdmin, deleteaUser);

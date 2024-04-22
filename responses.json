@@ -1,0 +1,31 @@
+{
+    "status": 1,
+    "payload": {
+        "pickup_location_added": 0,
+        "order_created": 1,
+        "awb_generated": 1,
+        "label_generated": 1,
+        "pickup_generated": 1,
+        "manifest_generated": 1,
+        "pickup_scheduled_date": "2024-04-23 09:00:00",
+        "pickup_booked_date": null,
+        "order_id": 530351448,
+        "shipment_id": 528456842,
+        "awb_code": "1091297979193",
+        "courier_company_id": 10,
+        "courier_name": "Delhivery Air",
+        "assigned_date_time": {
+            "date": "2024-04-22 16:27:57.000000",
+            "timezone_type": 3,
+            "timezone": "Asia/Kolkata"
+        },
+        "applied_weight": 1,
+        "cod": 0,
+        "label_url": "https://kr-shipmultichannel-mum.s3.ap-south-1.amazonaws.com/4492911/labels/shipping-label-528456842-1091297979193.pdf",
+        "manifest_url": "https://s3-ap-south-1.amazonaws.com/kr-shipmultichannel-mum/4492911/manifest/MANIFEST-0002.pdf",
+        "routing_code": "LCK/MEM",
+        "rto_routing_code": null,
+        "pickup_token_number": 164115515,
+        "channel_order_id": "66264297960b4ffd2f6a634d"
+    }
+}

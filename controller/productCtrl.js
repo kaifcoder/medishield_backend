@@ -1,7 +1,6 @@
 const Product = require("../models/productModel");
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
-const slugify = require("slugify");
 const validateMongoDbId = require("../utils/validateMongodbId");
 const Banner = require("../models/bannerModel");
 const Brand = require("../models/brandModel");
@@ -28,9 +27,12 @@ const updateProduct = asyncHandler(async (req, res) => {
   console.log(req.body);
   console.log(id);
   try {
-    const updateProduct = await Product.findOneAndUpdate({ sku: id }, req.body, {
+
+    const updateProduct = await Product.findByIdAndUpdate(id, req.body, {
       new: true,
     });
+
+    console.log(updateProduct);
     res.json(updateProduct);
   } catch (error) {
     throw new Error(error);
@@ -62,7 +64,7 @@ const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
     const findProduct = await Product.findById(id);
-    res.json({ data: findProduct });
+    res.json({ findProduct });
   } catch (error) {
     throw new Error(error);
   }
@@ -178,10 +180,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
     if (req.query.category) {
       queryStr = JSON.stringify({
         ...queryObj,
-        categories: {
-          $elemMatch: { name: { $regex: req.query.category, $options: "i" } },
-        }
-        , published: true
+        "categories.name": req.query.category, published: true
       });
     }
 
@@ -225,12 +224,16 @@ const getAllProduct = asyncHandler(async (req, res) => {
   }
 });
 
+
+
+
 const getAllProductsAdmin = asyncHandler(async (req, res) => {
   try {
     const {
       page,
       search,
-      brand
+      brand,
+      unpublished
     } = req.query;
     if (search) {
       const product = await Product.find({
@@ -242,17 +245,21 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
       });
       return res.json({ data: product, count: product.length });
     }
+    if (unpublished) {
+      const product = await Product.find({ published: false }).select("_id name sku manufacturer published price short_description");
+      return res.json({ data: product });
+    }
     if (brand) {
       const product = await Product.find({
         $or: [
           { manufacturer: { $regex: brand, $options: "i" } },
           {
             categories: {
-              $elemMatch: { name: { $regex: brand, $options: "i" } },
+              name: brand,
             },
           }
         ]
-      });
+      }).select("_id name sku manufacturer published price thumbnail_url media_gallery_entries short_description");
       return res.json({ data: product });
     }
     const skip = (page - 1) * 52;
@@ -425,6 +432,7 @@ const bulkOperation = asyncHandler(async (req, res) => {
 module.exports = {
   createProduct,
   getaProduct,
+  getProductById,
   getAllProduct,
   updateProduct,
   deleteProduct,

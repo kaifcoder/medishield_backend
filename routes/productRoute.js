@@ -14,6 +14,7 @@ const {
   contextualSearch,
   exportAllProducts,
   bulkOperation,
+  getProductById,
 } = require("../controller/productCtrl");
 const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -34,6 +35,7 @@ router.delete("/delete/:id", authMiddleware, isAdmin, deleteProduct);
 router.get("/", getAllProduct);
 router.get("/get/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
 router.get("/getproduct/:sku", authMiddleware, isAdmin, getaProductwithSku);
+router.get("/getproductwithid/:id", authMiddleware, isAdmin, getProductById);
 router.get("/context/contextualSearch", authMiddleware, contextualSearch);
 
 module.exports = router;
