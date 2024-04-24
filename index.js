@@ -24,8 +24,13 @@ const cors = require("cors");
 
 dbConnect();
 app.use(morgan("dev"));
+
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({
+  limit: "50mb",
+  extended: true,
+  parameterLimit: 50000,
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use("/api/user", authRouter);

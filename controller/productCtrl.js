@@ -243,7 +243,7 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
           { short_description: { $regex: search, $options: "i" } },
         ],
       });
-      return res.json({ data: product, count: product.length });
+      return res.json({ data: product });
     }
     if (unpublished) {
       const product = await Product.find({ published: false }).select("_id name sku manufacturer published price short_description");
@@ -391,9 +391,9 @@ const rating = asyncHandler(async (req, res) => {
 });
 
 const bulkOperation = asyncHandler(async (req, res) => {
+  const { operation, productIds, data } = req.body;
+  console.log(operation, { productIds, data });
   try {
-    const { operation, productIds, data } = req.body;
-    console.log(operation, { productIds, data });
 
     if (operation === "delete") {
       const deleteProduct = await Product.deleteMany({
@@ -420,11 +420,14 @@ const bulkOperation = asyncHandler(async (req, res) => {
       res.json(unpublishProduct);
     }
     if (operation === "import") {
+
       const importProduct = await Product.insertMany(data);
       res.json(importProduct);
     }
 
   } catch (error) {
+
+    console.log(error);
     throw new Error(error);
   }
 });
