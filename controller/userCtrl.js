@@ -938,6 +938,19 @@ const getWishlist = asyncHandler(async (req, res) => {
 
 // check stock availablity in zoho books
 const checkStock = async (barcode, requriedStock) => {
+  // check zoho toggle is on or off
+  const product = await Product.findOne({ sku: barcode });
+  if (product.inZoho === false) {
+    if (product.max_sale_qty >= requriedStock) {
+      return {
+        inStock: product.max_sale_qty,
+        itemId: product.itemId
+      }
+    }
+    else {
+      return false;
+    }
+  }
   // get auth token from zoho books
   const accessToken = await zohoAuth();
   // get the barcode of the product using sku
@@ -968,6 +981,7 @@ const checkStock = async (barcode, requriedStock) => {
   }
   else {
     console.log('Item not found');
+
     return false;
   }
 }
