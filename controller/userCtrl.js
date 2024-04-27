@@ -1221,8 +1221,6 @@ const createOrder = asyncHandler(async (req, res) => {
       customerId = customer.data.contact.contact_id;
     }
 
-
-
     const zohoInvoicePayload = {
       customer_id: customerId,
       salesperson_name: 'APP',
@@ -1464,6 +1462,7 @@ const createOrder = asyncHandler(async (req, res) => {
       message: "success"
     });
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 });
