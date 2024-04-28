@@ -54,7 +54,16 @@ const deleteProduct = asyncHandler(async (req, res) => {
 const getaProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
-    const findProduct = await Product.find({ id: id, published: true });
+    const findProduct = await Product.find({
+      $or: [
+        { _id: id },
+        { sku: id },
+        { id: id },
+        {
+          barcode: id
+        }
+      ], published: true
+    });
     res.json({ data: findProduct });
   } catch (error) {
     throw new Error(error);
@@ -97,13 +106,38 @@ const getAllBannerProducts = asyncHandler(async (req, res) => {
   try {
     const banners = await Banner.find();
     const productIds = banners.map((banner) => banner.id);
-    const products = await Product.find({ id: { $in: productIds } });
+    console.log(productIds);
+    const products = await Product.find({ sku: { $in: productIds } });
     const bannerproducts = products.map((product) => {
       const banner = banners.find((banner) => banner.id === product.id);
       return { ...product._doc, banner };
     });
+    console.log(banners);
     res.json({ data: banners });
   } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+});
+
+const updateBannerProduct = asyncHandler(async (req, res) => {
+  const { _id } = req.body;
+  console.log(req.body);
+  try {
+    const banner = await Banner.find({ _id: _id });
+    console.log(banner);
+    if (banner) {
+      const updatedBanner = await Banner.findByIdAndUpdate(_id,
+        req.body,
+        {
+          new: true
+        }
+      );
+      res.json(updatedBanner);
+    }
+    return res.status(400).json({ message: "Banner not found" });
+  } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 });
@@ -435,6 +469,7 @@ const bulkOperation = asyncHandler(async (req, res) => {
 
 module.exports = {
   createProduct,
+  updateBannerProduct,
   getaProduct,
   getProductById,
   getAllProduct,
