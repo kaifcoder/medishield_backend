@@ -62,9 +62,9 @@ const getaProduct = asyncHandler(async (req, res) => {
           $or: [
             { _id: ObjectId.isValid(id) ? ObjectId(id) : null },
             { sku: id },
-            { id: id },
+            { id: Number.isInteger(parseInt(id)) ? id : null }, // Check if id is an integer
             { barcode: id }
-          ]
+          ].filter(condition => condition !== null)
         },
         { published: true }
       ]
