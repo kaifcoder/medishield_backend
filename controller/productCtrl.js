@@ -7,6 +7,8 @@ const Brand = require("../models/brandModel");
 const { Worker } = require('worker_threads');
 const dotenv = require("dotenv");
 dotenv.config();
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -55,14 +57,17 @@ const getaProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
     const findProduct = await Product.find({
-      $or: [
-        { _id: id },
-        { sku: id },
-        { id: id },
+      $and: [
         {
-          barcode: id
-        }
-      ], published: true
+          $or: [
+            { _id: ObjectId.isValid(id) ? ObjectId(id) : null },
+            { sku: id },
+            { id: id },
+            { barcode: id }
+          ]
+        },
+        { published: true }
+      ]
     });
     res.json({ data: findProduct });
   } catch (error) {
