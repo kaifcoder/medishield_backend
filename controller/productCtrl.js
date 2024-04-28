@@ -66,6 +66,7 @@ const getaProduct = asyncHandler(async (req, res) => {
     });
     res.json({ data: findProduct });
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 });
