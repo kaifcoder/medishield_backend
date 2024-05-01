@@ -985,6 +985,7 @@ const checkStock = async (barcode, requriedStock) => {
     return false;
   }
 }
+
 // user cart
 const userCart = asyncHandler(async (req, res) => {
   const { product } = req.body;
@@ -1456,7 +1457,6 @@ const createOrder = asyncHandler(async (req, res) => {
     )
     );
 
-    //create shipping order
 
     res.json({
       message: "success"

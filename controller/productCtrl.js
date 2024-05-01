@@ -3,7 +3,7 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongodbId");
 const Banner = require("../models/bannerModel");
-const Brand = require("../models/brandModel");
+
 const { Worker } = require('worker_threads');
 const dotenv = require("dotenv");
 dotenv.config();
@@ -62,13 +62,14 @@ const getaProduct = asyncHandler(async (req, res) => {
           $or: [
             { _id: ObjectId.isValid(id) ? ObjectId(id) : null },
             { sku: id },
-            { id: Number.isInteger(parseInt(id)) ? id : null }, // Check if id is an integer
+            { id: Number.isInteger(parseInt(id)) ? id : 0 }, // Check if id is an integer
             { barcode: id }
-          ].filter(condition => condition !== null)
+          ]
         },
         { published: true }
       ]
     });
+
     res.json({ data: findProduct });
   } catch (error) {
     console.log(error);

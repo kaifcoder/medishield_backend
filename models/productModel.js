@@ -41,8 +41,6 @@ const childProductsSchema = new mongoose.Schema({
   is_in_stock: Boolean,
   pd_expiry_date: Date,
   price: {},
-  media_gallery_entries: [mediaEntrySchema],
-  categories: [categorySchema]
 }, { _id: false });
 
 const productSchema = new mongoose.Schema({
