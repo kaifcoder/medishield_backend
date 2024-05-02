@@ -1735,7 +1735,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       const apiKey = await ShiprocketAPI.findOne({}).sort({ createdAt: -1 }).exec();
       const order = await Order.findById(id).populate("products.product").populate("orderby").exec();
       // create payload for shipment
-      let updateOrderStatus;
+      let updatedOrderStatus = {};
       payload = {
         "order_id": order._id.toString(),
         "mode": "Surface",
@@ -1773,7 +1773,8 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         const access_key = await shiprocketLogin();
         // shipment creation
         const response = await createShipment(payload, access_key);
-        updateOrderStatus = await Order.findByIdAndUpdate(
+        console.log("RESPONSE IN MAIN API FUNCTION" + JSON.stringify(response));
+        updatedOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
             orderStatus: status,
@@ -1788,7 +1789,8 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         const access_key = await shiprocketLogin();
         // shipment creation
         const response = await createShipment(payload, access_key);
-        updateOrderStatus = await Order.findByIdAndUpdate(
+        console.log("RESPONSE IN MAIN API FUNCTION" + JSON.stringify(response));
+        updatedOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
             orderStatus: status,
@@ -1801,7 +1803,8 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         console.log('API key is valid');
         // Make API request using the valid API key
         const response = await createShipment(payload, apiKey.key);
-        updateOrderStatus = await Order.findByIdAndUpdate(
+        console.log("RESPONSE IN MAIN API FUNCTION" + JSON.stringify(response));
+        updatedOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
             orderStatus: status,
@@ -1811,62 +1814,61 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         ).populate("orderby").exec();
       }
 
+      sendResendEmail(
+        to = updatedOrderStatus.orderby.email,
+        subject = `Order Status Updated ${updatedOrderStatus._id}`,
+        html = `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Order Update Notification</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f5f5f5;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #fff;
+                    border-radius: 5px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+                h1 {
+                    color: #333;
+                }
+                p {
+                    margin-bottom: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Order Update Notification</h1>
+                <p>Dear Customer,</p>
+                <p>We are pleased to inform you that your order with Order ID: <strong>${updatedOrderStatus._id}</strong> has been updated.</p>
+                <p><strong>Order Status:</strong> ${status}</p>
+                <p><strong>Tracking Number:</strong> ${updatedOrderStatus.shipmentInfo ? updatedOrderStatus.shipmentInfo.awb_code : "N/A"
+        }</p>
+                <p><strong>courier name:</strong> ${updatedOrderStatus.shipmentInfo ? updatedOrderStatus.shipmentInfo.courier_name : "N/A"
+        }</p>
+                <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
+                <p>Warm regards,</p>
+                <p><em>MediShield Healthcare PVT. LTD.</em></p>
+            </div>
+        </body>
+        </html>
+        `
+      )
+
+      res.json(updatedOrderStatus);
     }
 
-
-    sendResendEmail(
-      to = updateOrderStatus.orderby.email,
-      subject = `Order Status Updated ${updateOrderStatus._id}`,
-      html = `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Order Update Notification</title>
-          <style>
-              body {
-                  font-family: Arial, sans-serif;
-                  line-height: 1.6;
-                  margin: 0;
-                  padding: 0;
-                  background-color: #f5f5f5;
-              }
-              .container {
-                  max-width: 600px;
-                  margin: 20px auto;
-                  padding: 20px;
-                  background-color: #fff;
-                  border-radius: 5px;
-                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-              }
-              h1 {
-                  color: #333;
-              }
-              p {
-                  margin-bottom: 20px;
-              }
-          </style>
-      </head>
-      <body>
-          <div class="container">
-              <h1>Order Update Notification</h1>
-              <p>Dear Customer,</p>
-              <p>We are pleased to inform you that your order with Order ID: <strong>${updateOrderStatus._id}</strong> has been updated.</p>
-              <p><strong>Order Status:</strong> ${status}</p>
-              <p><strong>Tracking Number:</strong> ${updateOrderStatus.shipmentInfo ? updateOrderStatus.shipmentInfo.awb_code : "N/A"
-      }</p>
-              <p><strong>courier name:</strong> ${updateOrderStatus.shipmentInfo ? updateOrderStatus.shipmentInfo.courier_name : "N/A"
-      }</p>
-              <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
-              <p>Warm regards,</p>
-              <p><em>MediShield Healthcare PVT. LTD.</em></p>
-          </div>
-      </body>
-      </html>
-      `
-    )
-
-    res.json(updateOrderStatus);
 
   } catch (error) {
     console.log(error);
