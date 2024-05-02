@@ -145,7 +145,7 @@ const updateAdmin = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
   try {
-    console.log(req.body);
+
     let hashedPassword = req?.body?.password;
     if (req?.body?.password) {
       const salt = bcrypt.genSaltSync(10);
@@ -1722,7 +1722,6 @@ const getOrderByUserId = asyncHandler(async (req, res) => {
 
 // ship the order and update the status
 const updateOrderStatus = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const { status, w, l, b, h
   } = req.body;
   const { id } = req.params;
@@ -1773,7 +1772,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         const access_key = await shiprocketLogin();
         // shipment creation
         const response = await createShipment(payload, access_key);
-        console.log("RESPONSE IN MAIN API FUNCTION" + JSON.stringify(response));
+
         updatedOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
@@ -1789,7 +1788,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         const access_key = await shiprocketLogin();
         // shipment creation
         const response = await createShipment(payload, access_key);
-        console.log("RESPONSE IN MAIN API FUNCTION" + JSON.stringify(response));
+
         updatedOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
@@ -1803,7 +1802,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         console.log('API key is valid');
         // Make API request using the valid API key
         const response = await createShipment(payload, apiKey.key);
-        console.log("RESPONSE IN MAIN API FUNCTION" + JSON.stringify(response));
+
         updatedOrderStatus = await Order.findByIdAndUpdate(
           id,
           {
@@ -1853,9 +1852,9 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
                 <p>Dear Customer,</p>
                 <p>We are pleased to inform you that your order with Order ID: <strong>${updatedOrderStatus._id}</strong> has been updated.</p>
                 <p><strong>Order Status:</strong> ${status}</p>
-                <p><strong>Tracking Number:</strong> ${updatedOrderStatus.shipmentInfo ? updatedOrderStatus.shipmentInfo.awb_code : "N/A"
+                <p><strong>Tracking Number:</strong> ${updatedOrderStatus.shipmentInfo ? updatedOrderStatus.shipmentInfo.payload.awb_code : "N/A"
         }</p>
-                <p><strong>courier name:</strong> ${updatedOrderStatus.shipmentInfo ? updatedOrderStatus.shipmentInfo.courier_name : "N/A"
+                <p><strong>courier name:</strong> ${updatedOrderStatus.shipmentInfo ? updatedOrderStatus.shipmentInfo.payload.courier_name : "N/A"
         }</p>
                 <p>Thank you for choosing us. Should you have any questions or concerns, please feel free to contact our customer service team.</p>
                 <p>Warm regards,</p>

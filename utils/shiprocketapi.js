@@ -22,7 +22,7 @@ async function createShipment(shipmentData, access_key) {
         };
 
         const response = await axios.request(config);
-        console.log(JSON.stringify(response.data));
+
         return response.data;
     } catch (error) {
         console.log(error);
@@ -48,7 +48,7 @@ async function shiprocketLogin() {
         };
 
         const response = await axios.request(config);
-        console.log(response.data.token);
+
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 10);
         const shiprocketAPI = new ShiprocketAPI({
