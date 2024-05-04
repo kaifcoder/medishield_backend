@@ -1071,7 +1071,8 @@ const userCart = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    throw new Error(error);
+
+    throw new Error("Error in adding product to cart please try again later");
   }
 });
 
