@@ -1071,8 +1071,10 @@ const userCart = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-
-    throw new Error("Error in adding product to cart please try again later");
+    if (error.statusCode === 400) {
+      throw new Error("Zoho Server is busy please try again later");
+    }
+    throw new Error(error);
   }
 });
 
@@ -1872,6 +1874,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
 
   } catch (error) {
+
     console.log(error);
     throw new Error(error);
 
