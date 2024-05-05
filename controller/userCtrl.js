@@ -939,50 +939,54 @@ const getWishlist = asyncHandler(async (req, res) => {
 // check stock availablity in zoho books
 const checkStock = async (barcode, requriedStock) => {
   // check zoho toggle is on or off
-  const product = await Product.findOne({ sku: barcode });
-  if (product.inZoho === false) {
-    if (product.max_sale_qty >= requriedStock) {
-      return {
-        inStock: product.max_sale_qty,
-        itemId: product.itemId
+  try {
+    const product = await Product.findOne({ sku: barcode });
+    if (product.inZoho === false) {
+      if (product.max_sale_qty >= requriedStock) {
+        return {
+          inStock: product.max_sale_qty,
+          itemId: product.itemId
+        }
+      }
+      else {
+        return false;
+      }
+    }
+    // get auth token from zoho books
+    const accessToken = await zohoAuth();
+    // get the barcode of the product using sku
+    const item = await zohoBookApi.get(`/items?organization_id=${org}&sku=${barcode}`,
+      {
+        headers: {
+          authorization: `Zoho-oauthtoken ${accessToken}`
+        }
+      }
+    );
+    console.log(item.data);
+    // get the product details using barcode
+    if (item.data.items.length > 0) {
+      const itemId = item.data.items[0].item_id;
+      const inStock = item.data.items[0].available_stock;
+      if (inStock >= requriedStock) {
+        console.log('Item is in stock');
+        console.log('Item ID:', itemId);
+        return {
+          inStock,
+          itemId
+        };
+      }
+      else {
+        console.log('Item is out of stock');
+        return false;
       }
     }
     else {
-      return false;
-    }
-  }
-  // get auth token from zoho books
-  const accessToken = await zohoAuth();
-  // get the barcode of the product using sku
-  const item = await zohoBookApi.get(`/items?organization_id=${org}&sku=${barcode}`,
-    {
-      headers: {
-        authorization: `Zoho-oauthtoken ${accessToken}`
-      }
-    }
-  );
-  console.log(item.data);
-  // get the product details using barcode
-  if (item.data.items.length > 0) {
-    const itemId = item.data.items[0].item_id;
-    const inStock = item.data.items[0].available_stock;
-    if (inStock >= requriedStock) {
-      console.log('Item is in stock');
-      console.log('Item ID:', itemId);
-      return {
-        inStock,
-        itemId
-      };
-    }
-    else {
-      console.log('Item is out of stock');
-      return false;
-    }
-  }
-  else {
-    console.log('Item not found');
+      console.log('Item not found');
 
-    return false;
+      return false;
+    }
+  } catch (error) {
+    throw new Error("Error in checking stock availability");
   }
 }
 
@@ -1071,9 +1075,7 @@ const userCart = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    if (error.statusCode === 400) {
-      throw new Error("Zoho Server is busy please try again later");
-    }
+
     throw new Error(error);
   }
 });
