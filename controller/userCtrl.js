@@ -986,6 +986,7 @@ const checkStock = async (barcode, requriedStock) => {
       return false;
     }
   } catch (error) {
+    console.log(error);
     throw new Error("Trouble in checking availability of stock");
   }
 }
