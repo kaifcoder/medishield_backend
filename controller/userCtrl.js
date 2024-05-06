@@ -940,18 +940,18 @@ const getWishlist = asyncHandler(async (req, res) => {
 const checkStock = async (barcode, requriedStock) => {
   // check zoho toggle is on or off
   try {
-    const product = await Product.findOne({ sku: barcode });
-    if (product.inZoho === false) {
-      if (product.max_sale_qty >= requriedStock) {
-        return {
-          inStock: product.max_sale_qty,
-          itemId: product.itemId
-        }
-      }
-      else {
-        return false;
-      }
-    }
+    // const product = await Product.findOne({ sku: barcode });
+    // if (product?.inZoho && product.inZoho === false) {
+    //   if (product.max_sale_qty >= requriedStock) {
+    //     return {
+    //       inStock: product.max_sale_qty,
+    //       itemId: product.itemId
+    //     }
+    //   }
+    //   else {
+    //     return false;
+    //   }
+    // }
     // get auth token from zoho books
     const accessToken = await zohoAuth();
     // get the barcode of the product using sku

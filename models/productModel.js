@@ -54,6 +54,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     unique: true
   },
+  inZoho: Boolean,
   thumbnail_url: String,
   short_description: String,
   medishield_coins: Number,
