@@ -21,6 +21,33 @@ const main = async () => {
     console.log(zohoAuthResponse.data.access_token);
     const accessToken = zohoAuthResponse.data.access_token;
 
+    const productPayload = {
+        name: 'Test Product',
+        rate: 1,
+        sku: 'MSTEST0001',
+        description: 'Test Product',
+        account_id: "1785281000000000486",
+        account_name: "Sales",
+        item_type: "inventory",
+        product_type: "goods",
+        initial_stock: 20,
+        initial_stock_rate: 1
+    }
+
+    const product = await zohoBookApi.post(`/items?organization_id=${org}`,
+
+        productPayload,
+        {
+            headers: {
+                authorization: `Zoho-oauthtoken ${accessToken}`
+            },
+
+        }
+    );
+    console.log(product.data);
+
+    // }
+
     // const sku = 'test2'
     // const customerId = '1811101000000024050'
     // // create customer 
