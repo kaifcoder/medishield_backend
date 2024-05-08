@@ -1327,17 +1327,87 @@ const createOrder = asyncHandler(async (req, res) => {
     let updated = await Product.bulkWrite(bulkOption, { new: true });
 
 
-    // send emails to user
-    sendResendEmail(
-      to = user.email,
-      subject = `Order Placed ${newOrder._id}`,
-      html = `<!DOCTYPE html>
+    try {
+      // send emails to user
+      sendResendEmail(
+        to = user.email,
+        subject = `Order Placed ${newOrder._id}`,
+        html = `<!DOCTYPE html>
+        <html lang="en">
+        
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Order Confirmation</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f4f4f4;
+                }
+        
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                }
+        
+                h1 {
+                    color: #333333;
+                }
+        
+                p {
+                    color: #666666;
+                }
+        
+                .order-id {
+                    font-weight: bold;
+                    color: #007bff;
+                }
+            </style>
+        </head>
+        
+        <body>
+            <div class="container">
+                <h1>Your Order Confirmation</h1>
+                <p>Hi,</p>
+                <p>Your order has been placed successfully.</p>
+                <p>Your order ID is: <span class="order-id">${newOrder._id}</span></p>
+                <p>Amount: ${amount} INR</p>
+                <p>Shipping Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
+                <p> Earned Medishield Coins: ${prod_msc}</p>
+                <p>You will receive a confirmation email once your items have been shipped.</p>
+                <p>Thank you for shopping with us!</p>
+            </div>
+        </body>
+        
+        </html>
+        `
+      );
+    } catch (error) {
+      return res.json({
+        message: "success",
+      });
+    }
+
+
+    // find emails of all admins from user collection
+    const admins = await User.find({ role: "admin" });
+    // send emails to admin
+    try {
+      admins.forEach((admin) => sendResendEmail(
+        to = admin.email,
+        subject = `New Order Arrived ${newOrder._id}`,
+        html = `<!DOCTYPE html>
       <html lang="en">
-      
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Order Confirmation</title>
+          <title>New Order Notification</title>
           <style>
               body {
                   font-family: Arial, sans-serif;
@@ -1363,7 +1433,15 @@ const createOrder = asyncHandler(async (req, res) => {
                   color: #666666;
               }
       
-              .order-id {
+              .order-details {
+                  margin-top: 20px;
+                  padding: 10px;
+                  background-color: #f9f9f9;
+                  border-radius: 8px;
+              }
+      
+              .order-id,
+              .amount {
                   font-weight: bold;
                   color: #007bff;
               }
@@ -1372,96 +1450,30 @@ const createOrder = asyncHandler(async (req, res) => {
       
       <body>
           <div class="container">
-              <h1>Your Order Confirmation</h1>
-              <p>Hi,</p>
-              <p>Your order has been placed successfully.</p>
-              <p>Your order ID is: <span class="order-id">${newOrder._id}</span></p>
-              <p>Amount: ${amount} INR</p>
-              <p>Shipping Address: ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
-              <p> Earned Medishield Coins: ${prod_msc}</p>
-              <p>You will receive a confirmation email once your items have been shipped.</p>
-              <p>Thank you for shopping with us!</p>
+              <h1>New Order Notification</h1>
+              <p>Hi admin,</p>
+              <p>A new order has been placed with the following details:</p>
+      
+              <div class="order-details">
+                  <p><span class="label">Order ID:</span> <span class="order-id">${newOrder._id}</span></p>
+                  <p><span class="label">Amount:</span> <span class="amount">${amount} INR</span></p>
+                  <p><span class="label">Customer Name:</span> ${shippingAddress.name}</p>
+                  <p><span class="label">Email:</span> ${user.email}</p>
+                  <p><span class="label">Mobile:</span> ${shippingAddress.mobile}</p>
+                  <p><span class="label">Shipping Address:</span> ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
+              </div>
+              <p>please check the admin dashboard for more details</p>
           </div>
       </body>
-      
       </html>
       `
-    );
-
-
-    // find emails of all admins from user collection
-    const admins = await User.find({ role: "admin" });
-    // send emails to admin
-    admins.forEach((admin) => sendResendEmail(
-      to = admin.email,
-      subject = `New Order Arrived ${newOrder._id}`,
-      html = `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>New Order Notification</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #f4f4f4;
-            }
-    
-            .container {
-                max-width: 600px;
-                margin: 20px auto;
-                padding: 20px;
-                background-color: #ffffff;
-                border-radius: 8px;
-                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            }
-    
-            h1 {
-                color: #333333;
-            }
-    
-            p {
-                color: #666666;
-            }
-    
-            .order-details {
-                margin-top: 20px;
-                padding: 10px;
-                background-color: #f9f9f9;
-                border-radius: 8px;
-            }
-    
-            .order-id,
-            .amount {
-                font-weight: bold;
-                color: #007bff;
-            }
-        </style>
-    </head>
-    
-    <body>
-        <div class="container">
-            <h1>New Order Notification</h1>
-            <p>Hi admin,</p>
-            <p>A new order has been placed with the following details:</p>
-    
-            <div class="order-details">
-                <p><span class="label">Order ID:</span> <span class="order-id">${newOrder._id}</span></p>
-                <p><span class="label">Amount:</span> <span class="amount">${amount} INR</span></p>
-                <p><span class="label">Customer Name:</span> ${shippingAddress.name}</p>
-                <p><span class="label">Email:</span> ${user.email}</p>
-                <p><span class="label">Mobile:</span> ${shippingAddress.mobile}</p>
-                <p><span class="label">Shipping Address:</span> ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.country} - ${shippingAddress.pincode}</p>
-            </div>
-            <p>please check the admin dashboard for more details</p>
-        </div>
-    </body>
-    </html>
-    `
-    )
-    );
+      )
+      );
+    } catch (error) {
+      return res.json({
+        message: "success"
+      });
+    }
 
 
     res.json({
