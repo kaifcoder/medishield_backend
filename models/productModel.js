@@ -40,7 +40,26 @@ const childProductsSchema = new mongoose.Schema({
   rating_count: String,
   is_in_stock: Boolean,
   pd_expiry_date: Date,
-  price: {},
+  price: {
+    minimalPrice: {
+      amount: {
+        value: Number,
+        currency: String
+      }
+    },
+    maximalPrice: {
+      amount: {
+        value: Number,
+        currency: String
+      }
+    },
+    regularPrice: {
+      amount: {
+        value: Number,
+        currency: String
+      }
+    }
+  },
 }, { _id: false });
 
 const productSchema = new mongoose.Schema({
