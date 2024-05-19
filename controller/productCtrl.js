@@ -283,6 +283,13 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
           { name: { $regex: search, $options: "i" } },
           { manufacturer: { $regex: search, $options: "i" } },
           { short_description: { $regex: search, $options: "i" } },
+          {
+            barcode: search
+
+          },
+          {
+            sku: search
+          }
         ],
       });
       return res.json({ data: product });
