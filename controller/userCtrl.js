@@ -962,6 +962,7 @@ const checkStock = async (barcode, requriedStock) => {
     //   }
     // }
     // get auth token from zoho books
+
     const accessToken = await zohoAuth();
     // get the barcode of the product using sku
     const item = await zohoBookApi.get(`/items?organization_id=${org}&sku=${barcode}`,
@@ -971,15 +972,16 @@ const checkStock = async (barcode, requriedStock) => {
         }
       }
     );
-    console.log(item.data);
     // get the product details using barcode
     if (item.data.items.length > 0) {
       const itemId = item.data.items[0].item_id;
       const inStock = item.data.items[0].available_stock;
       console.log("required stock", requriedStock);
       if (inStock >= requriedStock) {
+
         console.log('Item is in stock');
         console.log('Item ID:', itemId);
+
         return {
           inStock,
           itemId
