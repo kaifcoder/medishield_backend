@@ -976,6 +976,7 @@ const checkStock = async (barcode, requriedStock) => {
     if (item.data.items.length > 0) {
       const itemId = item.data.items[0].item_id;
       const inStock = item.data.items[0].available_stock;
+      console.log("required stock", requriedStock);
       if (inStock >= requriedStock) {
         console.log('Item is in stock');
         console.log('Item ID:', itemId);
