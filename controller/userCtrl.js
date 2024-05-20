@@ -31,13 +31,22 @@ const zohoAuthData = {
 };
 
 const org = process.env.ZOHO_ORG_ID
-
+let accessTokenGlobalzoho = null;
+let accessTokenGlobalTimestatmp = null;
 const zohoAuth = async () => {
+  // check if access token is present and not expired
+  if (accessTokenGlobalzoho && Date.now() - accessTokenGlobalTimestatmp < 3600000) {
+    return accessTokenGlobalzoho;
+  }
   const zohoAuthResponse = await axios.post(`
     https://accounts.zoho.in/oauth/v2/token?refresh_token=${zohoAuthData.refresh_token}&client_id=${zohoAuthData.client_id}&client_secret=${zohoAuthData.client_secret}&grant_type=${zohoAuthData.grant_type}
     ` );
   console.log(zohoAuthResponse.data.access_token);
   const accessToken = zohoAuthResponse.data.access_token;
+  // store the access token in memory for 1 hour
+  accessTokenGlobalzoho = accessToken;
+  accessTokenGlobalTimestatmp = Date.now();
+
   return accessToken;
 }
 
