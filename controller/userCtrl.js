@@ -1009,7 +1009,8 @@ const userCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
-    let { inStock, itemId } = await checkStock(product.variant, product.count);
+    console.log("Total count of the product", product?.totalcount);
+    let { inStock, itemId } = await checkStock(product.variant, product.totalcount);
     console.log(inStock);
     console.log(itemId);
     if (!inStock) {
