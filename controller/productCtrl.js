@@ -284,20 +284,60 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
       unpublished
     } = req.query;
     if (search) {
-      const product = await Product.find({
-        $or: [
-          { name: { $regex: search, $options: "i" } },
-          { manufacturer: { $regex: search, $options: "i" } },
-          { short_description: { $regex: search, $options: "i" } },
-          {
-            barcode: search
+      // search all name from starting 
 
-          },
-          {
-            sku: search
+      // const product = await Product.find({
+      //   $or: [
+      //     { name: { $regex: search, $options: "i" } },
+      //     { manufacturer: { $regex: search, $options: "i" } },
+      //     {
+      //       "categories.name": { $regex: search, $options: "i" }
+      //     },
+      //     {
+      //       barcode: search
+
+      //     },
+      //     {
+      //       sku: search
+      //     }
+      //   ],
+      // });
+      const product = await Product.aggregate([
+        {
+          $facet: {
+            productsWithNameStarting: [
+              {
+                $match: {
+                  name: { $regex: `^${search}`, $options: "i" }
+                }
+              }
+            ],
+            otherProducts: [
+              {
+                $match: {
+                  $or: [
+                    { name: { $regex: search, $options: "i" } },
+                    { manufacturer: { $regex: search, $options: "i" } },
+                    { "categories.name": { $regex: search, $options: "i" } },
+                    { barcode: search },
+                    { sku: search }
+                  ],
+                  name: { $not: { $regex: `^${search}`, $options: "i" } } // Exclude products with names starting with the search term
+                }
+              }
+            ]
           }
-        ],
-      });
+        },
+        {
+          $project: {
+            products: {
+              $concatArrays: ["$productsWithNameStarting", "$otherProducts"]
+            }
+          }
+        },
+        { $unwind: "$products" },
+        { $replaceRoot: { newRoot: "$products" } }
+      ]);
       return res.json({ data: product });
     }
     if (unpublished) {
@@ -327,6 +367,7 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
     }).skip(skip).limit(52);
     res.json({ data: product, count: productCount });
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 });
