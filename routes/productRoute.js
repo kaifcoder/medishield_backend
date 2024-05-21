@@ -36,7 +36,7 @@ router.delete("/delete/:id", authMiddleware, isAdmin, deleteProduct);
 router.get("/", getAllProduct);
 router.get("/get/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
 router.get("/getproduct/:sku", authMiddleware, isAdmin, getaProductwithSku);
-router.get("/getproductwithid/:id", authMiddleware, isAdmin, getProductById);
+router.get("/getproductwithid/:id", getProductById);
 router.get("/context/contextualSearch", authMiddleware, contextualSearch);
 
 module.exports = router;
