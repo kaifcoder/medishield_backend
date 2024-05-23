@@ -229,8 +229,12 @@ const getAllProduct = asyncHandler(async (req, res) => {
       queryStr = JSON.stringify({
         ...queryObj,
         "$or": [
-          "categories.name": req.query.category,
-          "manufacturer": req.query.category
+          {
+            categories: {
+              name: req.query.category,
+            },
+          },
+          { manufacturer: { $regex: req.query.category, $options: "i" } }
         ],
         published: true
       });
