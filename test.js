@@ -21,30 +21,50 @@ const main = async () => {
     console.log(zohoAuthResponse.data.access_token);
     const accessToken = zohoAuthResponse.data.access_token;
 
-    const productPayload = {
-        name: 'Test Product',
-        rate: 1,
-        sku: 'MSTEST0001',
-        description: 'Test Product',
-        account_id: "1785281000000000486",
-        account_name: "Sales",
-        item_type: "inventory",
-        product_type: "goods",
-        initial_stock: 20,
-        initial_stock_rate: 1
-    }
+    // const productPayload = {
+    //     name: 'Test Product',
+    //     rate: 1,
+    //     sku: 'MSTEST0001',
+    //     description: 'Test Product',
+    //     account_id: "1785281000000000486",
+    //     account_name: "Sales",
+    //     item_type: "inventory",
+    //     product_type: "goods",
+    //     initial_stock: 20,
+    //     initial_stock_rate: 1
+    // }
 
-    const product = await zohoBookApi.post(`/items?organization_id=${org}`,
+    // const product = await zohoBookApi.post(`/items?organization_id=${org}`,
 
-        productPayload,
+    //     productPayload,
+    //     {
+    //         headers: {
+    //             authorization: `Zoho-oauthtoken ${accessToken}`
+    //         },
+
+    //     }
+    // );
+    const zohoInvoicePayload = {
+        customer_id: "1785281000001452001",
+        salesperson_name: 'APP',
+        is_inclusive_tax: true,
+        line_items: [
+            {
+                item_id: '1785281000001450001',
+                quantity: 1,
+            }
+        ],
+    };
+
+    const invoice = await zohoBookApi.post(`/invoices?organization_id=${org}`, zohoInvoicePayload,
         {
             headers: {
                 authorization: `Zoho-oauthtoken ${accessToken}`
-            },
-
-        }
-    );
-    console.log(product.data);
+            }
+        });
+    console.log(invoice.data);
+    console.log(invoice.data.invoice.invoice_id);
+    // console.log(accessToken);
 
 
 }
