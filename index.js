@@ -18,6 +18,7 @@ const cartRouter = require("./routes/cartRoute");
 const enqRouter = require("./routes/enqRoute");
 const roleRouter = require("./routes/permissionRoute");
 const uploadRouter = require("./routes/uploadRoute");
+const couponRouter = require("./routes/couponRoute");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const cors = require("cors");
@@ -41,6 +42,7 @@ app.use("/api/enquiry", enqRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/roles", roleRouter);
+app.use("/api/coupon", couponRouter)
 
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "Everything is healthy" });

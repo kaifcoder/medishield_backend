@@ -46,6 +46,11 @@ var orderSchema = new mongoose.Schema(
       type: {},
       ref: "Address",
     },
+    couponCodeApplied: {
+
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupon",
+    },
   },
   {
     timestamps: true,
