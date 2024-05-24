@@ -1244,7 +1244,7 @@ const createOrder = asyncHandler(async (req, res) => {
     const zohoInvoicePayload = {
       customer_id: customerId,
       salesperson_name: 'APP',
-      is_inclusive_tax: false,
+      is_inclusive_tax: true,
       line_items: userCart.products.map((item) => {
         return {
           item_id: item.itemId,
