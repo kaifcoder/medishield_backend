@@ -39,6 +39,6 @@ router.get("/", getAllProduct);
 router.get("/get/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
 router.get("/getproduct/:sku", authMiddleware, isAdmin, getaProductwithSku);
 router.get("/getproductwithid/:id", getProductById);
-router.get("/context/contextualSearch", authMiddleware, contextualSearch);
+router.get("/context/contextualSearch", contextualSearch);
 
 module.exports = router;
