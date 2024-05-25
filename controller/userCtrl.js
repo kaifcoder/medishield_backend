@@ -1198,7 +1198,7 @@ function verifyPaymentSignature(order_id, razorpay_payment_id, razorpay_signatur
 
 // post checkout order creation
 const createOrder = asyncHandler(async (req, res) => {
-  const { paymentId, amount, shipping, shippingAddress, msc, orderId, paymentSignature } = req.body;
+  const { paymentId, amount, shipping, shippingAddress, msc, orderId, paymentSignature, couponId } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
@@ -1308,6 +1308,7 @@ const createOrder = asyncHandler(async (req, res) => {
         currency: "INR",
       },
       orderby: user._id,
+      couponCodeApplied: couponId ? couponId : null,
       orderStatus: "Processing",
       shippingAddress: shippingAddress,
     }).save();
