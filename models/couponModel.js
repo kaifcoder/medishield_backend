@@ -12,7 +12,7 @@ var couponSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ["Percentage", "Flat"],
+        enum: ["percentage", "flat"],
     },
     minimumCartValue: {
         type: Number,
@@ -28,8 +28,8 @@ var couponSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: "Active",
-        enum: ["Active", "Expired"],
+        default: "active",
+        enum: ["active", "expired"],
     },
 });
 

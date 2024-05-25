@@ -85,6 +85,7 @@ const createUser = asyncHandler(async (req, res) => {
         }
       }
     );
+    console.log(customer);
     const newUser = await User.create({
       ...req.body,
       zohoCustomerId: customer.data.contact.contact_id,

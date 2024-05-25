@@ -72,9 +72,7 @@ const getallCoupon = asyncHandler(async (req, res) => {
         });
         // sort by name in ascending order
 
-        res.json({
-            getallCoupon
-        });
+        res.json(getallCoupon);
     } catch (error) {
         throw new Error(error);
     }

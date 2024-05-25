@@ -113,13 +113,13 @@ const getAllBannerProducts = asyncHandler(async (req, res) => {
   try {
     const banners = await Banner.find();
     const productIds = banners.map((banner) => banner.id);
-    console.log(productIds);
+
     const products = await Product.find({ sku: { $in: productIds } });
     const bannerproducts = products.map((product) => {
       const banner = banners.find((banner) => banner.id === product.id);
       return { ...product._doc, banner };
     });
-    console.log(banners);
+
     res.json({ data: banners });
   } catch (error) {
     console.log(error);
