@@ -51,69 +51,74 @@ const zohoAuth = async () => {
 }
 
 const createUser = asyncHandler(async (req, res) => {
-  const email = req.body.email;
-  const iscreatingAdmin = req.body.role === "admin" ? true : false;
-  if (iscreatingAdmin) {
-    return res.json({
-      message: "Admin Creation is not allowed by users"
-    });
-  }
-  const findUser = await User.findOne({ email: email });
-  if (!findUser) {
-
-    const accessToken = await zohoAuth();
-    // create contact on zoho also
-    const customerPayload = {
-      contact_name: email,
-      contact_type: 'customer',
-      contact_subtype: 'individual',
-      contact_persons: [
-        {
-          first_name: req.body.firstname,
-          last_name: req.body.lastname,
-          email: email,
-          phone: req.body.mobile,
-        }
-      ],
-    };
-
-
-    const customer = await zohoBookApi.post(`/contacts?organization_id=${org}`, customerPayload,
-      {
-        headers: {
-          authorization: `Zoho-oauthtoken ${accessToken}`
-        }
-      }
-    );
-    console.log(customer);
-    const newUser = await User.create({
-      ...req.body,
-      zohoCustomerId: customer.data.contact.contact_id,
-    });
-    // give user 100 coins for signup
-    const user = await User.findById(newUser._id);
-    user.medishieldcoins = 50;
-    // generate referral code
-    const referralCode = user._id.toString().slice(0, 9);
-    user.referralCode = referralCode;
-    await user.save();
-    // give referrer 100 coins for referring
-    let referer = req.body.referralCode;
-    if (referer) {
-      const referrer = await User
-        .findOne({ referralCode: referer });
-      if (referrer) {
-        referrer.medishieldcoins = referrer.medishieldcoins + 100;
-        await referrer.save();
-      }
+  try {
+    const email = req.body.email;
+    const iscreatingAdmin = req.body.role === "admin" ? true : false;
+    if (iscreatingAdmin) {
+      return res.json({
+        message: "Admin Creation is not allowed by users"
+      });
     }
-    res.json({
-      newUser,
-      token: generateToken(newUser?._id),
-      email: newUser?.email,
-    });
-  } else {
-    throw new Error("User Already Exists Please Login");
+    const findUser = await User.findOne({ email: email });
+    if (!findUser) {
+
+      const accessToken = await zohoAuth();
+      // create contact on zoho also
+      const customerPayload = {
+        contact_name: email,
+        contact_type: 'customer',
+        contact_subtype: 'individual',
+        contact_persons: [
+          {
+            first_name: req.body.firstname,
+            last_name: req.body.lastname,
+            email: email,
+            phone: req.body.mobile,
+          }
+        ],
+      };
+
+
+      const customer = await zohoBookApi.post(`/contacts?organization_id=${org}`, customerPayload,
+        {
+          headers: {
+            authorization: `Zoho-oauthtoken ${accessToken}`
+          }
+        }
+      );
+      console.log(customer);
+      const newUser = await User.create({
+        ...req.body,
+        zohoCustomerId: customer.data.contact.contact_id,
+      });
+      // give user 100 coins for signup
+      const user = await User.findById(newUser._id);
+      user.medishieldcoins = 50;
+      // generate referral code
+      const referralCode = user._id.toString().slice(0, 9);
+      user.referralCode = referralCode;
+      await user.save();
+      // give referrer 100 coins for referring
+      let referer = req.body.referralCode;
+      if (referer) {
+        const referrer = await User
+          .findOne({ referralCode: referer });
+        if (referrer) {
+          referrer.medishieldcoins = referrer.medishieldcoins + 100;
+          await referrer.save();
+        }
+      }
+      res.json({
+        newUser,
+        token: generateToken(newUser?._id),
+        email: newUser?.email,
+      });
+    } else {
+      throw new Error("User Already Exists Please Login");
+    }
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
   }
 });
 
