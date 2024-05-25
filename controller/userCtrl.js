@@ -1761,6 +1761,16 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   // get order details
 
   try {
+    if (status === "picked") {
+      const updatedOrderStatus = await Order.findByIdAndUpdate
+        (id,
+          {
+            orderStatus: "Shipped",
+          },
+          { new: true }
+        ).populate("orderby").exec();
+      return res.json(updatedOrderStatus);
+    }
     if (status !== "Shipped" || !w || !l || !b || !h) throw new Error("Weight, length, breadth and height are required");
     else if (status === "Shipped") {
       const apiKey = await ShiprocketAPI.findOne({}).sort({ createdAt: -1 }).exec();

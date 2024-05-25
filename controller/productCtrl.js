@@ -149,6 +149,15 @@ const updateBannerProduct = asyncHandler(async (req, res) => {
   }
 });
 
+const createNewBanner = asyncHandler(async (req, res) => {
+  try {
+    const banner = await Banner.create(req.body);
+    return res.json(banner);
+  } catch (error) {
+    throw new Error(error);
+  }
+})
+
 const contextualSearch = asyncHandler(async (req, res) => {
   try {
     const search = req.query.search;
@@ -292,24 +301,7 @@ const getAllProductsAdmin = asyncHandler(async (req, res) => {
       unpublished
     } = req.query;
     if (search) {
-      // search all name from starting 
 
-      // const product = await Product.find({
-      //   $or: [
-      //     { name: { $regex: search, $options: "i" } },
-      //     { manufacturer: { $regex: search, $options: "i" } },
-      //     {
-      //       "categories.name": { $regex: search, $options: "i" }
-      //     },
-      //     {
-      //       barcode: search
-
-      //     },
-      //     {
-      //       sku: search
-      //     }
-      //   ],
-      // });
       const product = await Product.aggregate([
         {
           $facet: {
@@ -539,6 +531,7 @@ const bulkOperation = asyncHandler(async (req, res) => {
 module.exports = {
   createProduct,
   updateBannerProduct,
+  createNewBanner,
   getaProduct,
   getProductById,
   getAllProduct,

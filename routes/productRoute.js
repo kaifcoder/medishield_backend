@@ -16,6 +16,7 @@ const {
   bulkOperation,
   getProductById,
   updateBannerProduct,
+  createNewBanner,
 } = require("../controller/productCtrl");
 const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -24,6 +25,7 @@ router.get("/banner/getBannerProduct", getAllBannerProducts);
 router.get("/export/all", authMiddleware, isAdmin, exportAllProducts);
 router.post("/bulk/bulkoperation", authMiddleware, isAdmin, bulkOperation);
 router.post("/banner/updateBannerProduct", authMiddleware, isAdmin, updateBannerProduct);
+router.post("/banner/createBanner", authMiddleware, isAdmin, createNewBanner);
 router.get("/:id", getaProduct);
 router.put("/wishlist", authMiddleware, addToWishlist);
 router.put("/rating", authMiddleware, rating);
