@@ -56,7 +56,6 @@ const deleteProduct = asyncHandler(async (req, res) => {
 const getaProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   // check whether id is parsable to integer or not
-  console.log(Number.isInteger(parseInt(id)));
   try {
     const findProduct = await Product.find({
       $and: [
@@ -64,7 +63,7 @@ const getaProduct = asyncHandler(async (req, res) => {
           $or: [
             { _id: ObjectId.isValid(id) ? ObjectId(id) : null },
             { sku: id },
-            { id: Number.isInteger(parseInt(id)) ? id : 0 }, // Check if id is an integer
+            { id: !isNaN(id) ? id : 0 }, // Check if id is an integer
             { barcode: id }
           ]
         },
