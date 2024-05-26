@@ -55,6 +55,8 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 const getaProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  // check whether id is parsable to integer or not
+  console.log(Number.isInteger(parseInt(id)));
   try {
     const findProduct = await Product.find({
       $and: [
