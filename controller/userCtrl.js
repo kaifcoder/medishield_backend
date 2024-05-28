@@ -1199,7 +1199,7 @@ function verifyPaymentSignature(order_id, razorpay_payment_id, razorpay_signatur
 
 // post checkout order creation
 const createOrder = asyncHandler(async (req, res) => {
-  const { paymentId, amount, shipping, shippingAddress, msc, orderId, paymentSignature, couponId } = req.body;
+  const { paymentId, amount, shipping, shippingAddress, msc, orderId, paymentSignature, couponId, disc } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
@@ -1310,6 +1310,7 @@ const createOrder = asyncHandler(async (req, res) => {
         amount: amount,
         shipping: shipping,
         msc: msc,
+        discount: disc,
         created: Date.now(),
         currency: "INR",
       },
@@ -1319,7 +1320,7 @@ const createOrder = asyncHandler(async (req, res) => {
       shippingAddress: shippingAddress,
       couponCode: coupon.couponCode,
       couponDiscount: coupon.discount,
-
+      couponType: coupon.type,
     }).save();
 
     //update user's medishield coins

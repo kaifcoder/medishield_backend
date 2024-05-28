@@ -150,6 +150,16 @@ const updateBannerProduct = asyncHandler(async (req, res) => {
   }
 });
 
+const deleteBannerProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleteBanner = await Banner.findByIdAndDelete(id);
+    res.json(deleteBanner);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 const createNewBanner = asyncHandler(async (req, res) => {
   try {
     const banner = await Banner.create(req.body);
@@ -547,4 +557,5 @@ module.exports = {
   contextualSearch,
   exportAllProducts,
   bulkOperation,
+  deleteBannerProduct
 };

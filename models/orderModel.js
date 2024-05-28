@@ -56,6 +56,10 @@ var orderSchema = new mongoose.Schema(
     couponDiscount: {
       type: Number,
     },
+    couponType: {
+      type: String,
+    }
+
   },
   {
     timestamps: true,

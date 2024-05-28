@@ -17,6 +17,7 @@ const {
   getProductById,
   updateBannerProduct,
   createNewBanner,
+  deleteBannerProduct,
 } = require("../controller/productCtrl");
 const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -29,11 +30,11 @@ router.post("/banner/createBanner", authMiddleware, isAdmin, createNewBanner);
 router.get("/:id", getaProduct);
 router.put("/wishlist", authMiddleware, addToWishlist);
 router.put("/rating", authMiddleware, rating);
-router.delete("/deleteall", deleteAllProduct);
 
 router.post("/", authMiddleware, isAdmin, createProduct);
 router.put("/update/:id", authMiddleware, isAdmin, updateProduct);
 router.delete("/delete/:id", authMiddleware, isAdmin, deleteProduct);
+router.delete("/deletebanner/:id", authMiddleware, isAdmin, deleteBannerProduct);
 
 router.get("/", getAllProduct);
 router.get("/get/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
