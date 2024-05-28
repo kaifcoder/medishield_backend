@@ -1651,6 +1651,7 @@ const getOrders = asyncHandler(async (req, res) => {
     const userorders = await Order.find({ orderby: _id },)
       .populate("products.product")
       .populate("orderby")
+      .populate("couponCodeApplied")
       .exec();
     const userordersinreverse = userorders.reverse();
     res.json({ 'data': userordersinreverse });
@@ -1666,6 +1667,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
     const alluserorders = await Order.find()
       .populate("products.product")
       .populate("orderby")
+      .populate("couponCodeApplied")
       .exec();
     res.json(alluserorders);
   } catch (error) {
