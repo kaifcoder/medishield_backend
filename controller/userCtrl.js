@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
 const Address = require("../models/addressModal");
+const Coupon = require("../models/couponModel");
 const Order = require("../models/orderModel");
 const ShiprocketAPI = require('../models/shiprocketapi');
 const asyncHandler = require("express-async-handler");
@@ -1202,7 +1203,12 @@ const createOrder = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
-
+    //  find coupon
+    let coupon = null;
+    if (couponId) {
+      coupon = await Coupon.findById(couponId);
+      console.log(coupon);
+    }
     // verify signatures here
     const isAuthentic = verifyPaymentSignature(orderId, paymentId, paymentSignature);
     if (!isAuthentic) {
@@ -1311,6 +1317,9 @@ const createOrder = asyncHandler(async (req, res) => {
       couponCodeApplied: couponId ? couponId : null,
       orderStatus: "Processing",
       shippingAddress: shippingAddress,
+      couponCode: coupon.couponCode,
+      couponDiscount: coupon.discount,
+
     }).save();
 
     //update user's medishield coins
@@ -1949,6 +1958,7 @@ const getSingleOrder = asyncHandler(async (req, res) => {
     const order = await Order.findById(id)
       .populate("products.product")
       .populate("orderby")
+      .populate("couponCodeApplied")
       .exec();
     res.json(order);
   } catch (error) {
