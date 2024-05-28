@@ -1314,7 +1314,7 @@ const createOrder = asyncHandler(async (req, res) => {
     }).save();
 
     //update user's medishield coins
-    user.medishieldcoins = user.medishieldcoins - msc * 10;
+    user.medishieldcoins = user.medishieldcoins - msc;
     await user.save();
 
     // credit medishield coins to user
@@ -1533,7 +1533,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
 
 
       if (order.paymentIntent.msc > 0) {
-        user.medishieldcoins = Number(user.medishieldcoins + (order.paymentIntent.msc * 10));
+        user.medishieldcoins = Number(user.medishieldcoins + (order.paymentIntent.msc));
         await user.save();
       }
 
