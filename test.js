@@ -48,12 +48,16 @@ const main = async () => {
         customer_id: "1785281000001452001",
         salesperson_name: 'APP',
         is_inclusive_tax: true,
+        discount: "10",
+        is_discount_before_tax: false,
+        discount_type: "entity_level",
         line_items: [
             {
                 item_id: '1785281000001450001',
                 quantity: 1,
             }
         ],
+        shipping_charge: 100,
     };
 
     const invoice = await zohoBookApi.post(`/invoices?organization_id=${org}`, zohoInvoicePayload,

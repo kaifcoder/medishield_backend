@@ -1257,6 +1257,10 @@ const createOrder = asyncHandler(async (req, res) => {
       customer_id: customerId,
       salesperson_name: 'APP',
       is_inclusive_tax: true,
+      discount: disc,
+      is_discount_before_tax: false,
+      discount_type: "entity_level",
+      shipping_charge: shipping,
       line_items: userCart.products.map((item) => {
         return {
           item_id: item.itemId,
