@@ -34,7 +34,7 @@ router.put("/rating", authMiddleware, rating);
 router.post("/", authMiddleware, isAdmin, createProduct);
 router.put("/update/:id", authMiddleware, isAdmin, updateProduct);
 router.delete("/delete/:id", authMiddleware, isAdmin, deleteProduct);
-router.delete("/deletebanner/:id", authMiddleware, isAdmin, deleteBannerProduct);
+router.delete("/banner/deletebanner/:id", authMiddleware, isAdmin, deleteBannerProduct);
 
 router.get("/", getAllProduct);
 router.get("/get/getallproducts", authMiddleware, isAdmin, getAllProductsAdmin);
