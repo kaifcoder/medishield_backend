@@ -246,7 +246,8 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
     // if category is present then filter by category
     if (req.query.category) {
-      if (req.query.categories == "Endocraft" || req.query.categories == "Medishield Healthcare" || req.query.categories == "Clinician's Choice") {
+      if ((req.query.categories === "Endocraft" || req.query.categories === "Medishield Healthcare" || req.query.categories === "Clinician's Choice") && (req.query.limit == 4)) {
+        console.log("featured category", req.query.category);
         queryStr = JSON.stringify({
           ...queryObj,
           "$or": [
@@ -259,16 +260,19 @@ const getAllProduct = asyncHandler(async (req, res) => {
           featured: true,
         });
       }
-      queryStr = JSON.stringify({
-        ...queryObj,
-        "$or": [
-          { manufacturer: { $regex: req.query.category, $options: "i" } },
-          {
-            "categories.name": req.query.category
-          }
-        ],
-        published: true
-      });
+      else {
+        console.log("normal category", req.query.category);
+        queryStr = JSON.stringify({
+          ...queryObj,
+          "$or": [
+            { manufacturer: { $regex: req.query.category, $options: "i" } },
+            {
+              "categories.name": req.query.category
+            }
+          ],
+          published: true
+        });
+      }
     }
 
 
