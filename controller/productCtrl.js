@@ -246,7 +246,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
     // if category is present then filter by category
     if (req.query.category) {
-      if (req.query.limit == 4) {
+      if ((req.query.category === "Endocraft" || req.query.category === "Medishield Healthcare" || req.query.category == "Clinician's Choice") && (req.query.limit == 4)) {
         console.log("featured category", req.query.category);
         queryStr = JSON.stringify({
           ...queryObj,
