@@ -246,12 +246,22 @@ const getAllProduct = asyncHandler(async (req, res) => {
 
     // if category is present then filter by category
     if (req.query.category) {
+      if (req.query.categories == "Endocraft" || req.query.categories == "Medishield Healthcare" || req.query.categories == "Clinician's Choice") {
+        queryStr = JSON.stringify({
+          ...queryObj,
+          "$or": [
+            { manufacturer: { $regex: req.query.category, $options: "i" } },
+            {
+              "categories.name": req.query.category
+            }
+          ],
+          published: true,
+          featured: true,
+        });
+      }
       queryStr = JSON.stringify({
         ...queryObj,
         "$or": [
-          // {
-          //   name: { $regex: req.query.category, $options: "i" }
-          // },
           { manufacturer: { $regex: req.query.category, $options: "i" } },
           {
             "categories.name": req.query.category
@@ -300,8 +310,6 @@ const getAllProduct = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
-
-
 
 
 const getAllProductsAdmin = asyncHandler(async (req, res) => {
@@ -539,6 +547,7 @@ const bulkOperation = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
 
 module.exports = {
   createProduct,

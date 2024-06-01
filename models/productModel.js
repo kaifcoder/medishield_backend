@@ -97,7 +97,10 @@ const productSchema = new mongoose.Schema({
     direction_to_use: String,
     features: String
   },
-  featured: Boolean,
+  featured: {
+    type: Boolean,
+    default: false
+  },
   childProducts: [childProductsSchema],
   reviews: [{
     user: {
