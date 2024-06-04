@@ -274,6 +274,22 @@ const getAllProduct = asyncHandler(async (req, res) => {
         });
       }
     }
+    if (req.query.featured) {
+      const excludedCategories = ["Endocraft", "Medishield Healthcare", "Clinician's Choice"];
+      // find  featured products other than category - Endocraft, Medishield Healthcare, Clinician's Choice
+      queryStr = JSON.stringify({
+        ...queryObj,
+        published: true,
+        featured: true,
+        "$or": [
+          { manufacturer: { $nin: excludedCategories } },
+          {
+            "categories.name": { $nin: excludedCategories }
+          }
+        ]
+      });
+
+    }
 
 
     let query = Product.find(JSON.parse(queryStr));
