@@ -1322,9 +1322,9 @@ const createOrder = asyncHandler(async (req, res) => {
       couponCodeApplied: couponId ? couponId : null,
       orderStatus: "Processing",
       shippingAddress: shippingAddress,
-      couponCode: coupon.couponCode,
-      couponDiscount: coupon.discount,
-      couponType: coupon.type,
+      couponCode: coupon == null ? coupon.couponCode : "",
+      couponDiscount: coupon == null ? coupon.discount : 0,
+      couponType: coupon == null ? coupon.type : "",
     }).save();
 
     //update user's medishield coins
