@@ -98,7 +98,7 @@ router.put("/update-address/:id", authMiddleware, updateAddress);
 router.put("/update-admin/:id", authMiddleware, isAdmin, updateAdmin);
 
 router.delete("/empty-cart", authMiddleware, emptyCart);
-router.delete("/delete-user/:id", authMiddleware, deleteaUser);
+router.delete("/delete-user", authMiddleware, deleteaUser);
 router.delete("/address/:id", authMiddleware, deleteAddress);
 
 router.post("/create-razorpay-order", authMiddleware, createRazorpayOrder);
