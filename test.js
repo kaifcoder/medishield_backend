@@ -44,30 +44,39 @@ const main = async () => {
 
     //     }
     // );
-    const zohoInvoicePayload = {
-        customer_id: "1785281000001452001",
-        salesperson_name: 'APP',
-        is_inclusive_tax: true,
-        discount: "10",
-        is_discount_before_tax: false,
-        discount_type: "entity_level",
-        line_items: [
-            {
-                item_id: '1785281000001450001',
-                quantity: 1,
-            }
-        ],
-        shipping_charge: 100,
-    };
+    // const zohoInvoicePayload = {
+    //     customer_id: "1785281000001452001",
+    //     salesperson_name: 'APP',
+    //     is_inclusive_tax: true,
+    //     discount: "10",
+    //     is_discount_before_tax: false,
+    //     discount_type: "entity_level",
+    //     line_items: [
+    //         {
+    //             item_id: '1785281000001450001',
+    //             quantity: 1,
+    //         }
+    //     ],
+    //     shipping_charge: 100,
+    // };
 
-    const invoice = await zohoBookApi.post(`/invoices?organization_id=${org}`, zohoInvoicePayload,
+    // const invoice = await zohoBookApi.post(`/invoices?organization_id=${org}`, zohoInvoicePayload,
+    //     {
+    //         headers: {
+    //             authorization: `Zoho-oauthtoken ${accessToken}`
+    //         }
+    //     });
+    // console.log(invoice.data);
+    // console.log(invoice.data.invoice.invoice_id);
+
+    const invoicedownload = await zohoBookApi.get(`/invoices/1785281000002462001?organization_id=${org}`,
         {
             headers: {
                 authorization: `Zoho-oauthtoken ${accessToken}`
             }
         });
-    console.log(invoice.data);
-    console.log(invoice.data.invoice.invoice_id);
+
+    console.log(invoicedownload);
     // console.log(accessToken);
 
 

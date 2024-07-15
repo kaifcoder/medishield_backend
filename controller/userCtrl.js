@@ -685,11 +685,13 @@ const getaUser = asyncHandler(async (req, res) => {
 
 
 const deleteaUser = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const { _id } = req.user;
+  validateMongoDbId(_id);
   try {
-    const deleteaUser = await User.deleteOne({ email: id });
+    const deleteaUser = await User.findByIdAndRemove(_id);
     res.json({
       deleteaUser,
+      status: "success",
     });
   } catch (error) {
     throw new Error(error);
